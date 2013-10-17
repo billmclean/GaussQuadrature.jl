@@ -23,13 +23,13 @@ module GaussQuadrature
 #
 # approximates
 #
-#          / b
+#          / hi
 #          |
 #          |    f(x) w(x) dx
 #          |
-#          / a
+#          / lo
 #
-# where weight function w(x) and interval a < x < b are as shown
+# where the weight function w(x) and interval lo < x < hi are as shown
 # in the table below.
 #
 # Name                      Interval     Weight Function
@@ -48,13 +48,12 @@ module GaussQuadrature
 # of the interval of integration as an abscissa in the the quadrature 
 # rule, as follows.
 # 
-# endpt = "Neither" Default,     a < x[j] < b, j = 1:n.
-# endpt = "Left"    Left Radau,  a = x[1] < x[j] < b, j = 2:n.
-# endpt = "Right"   Right Radau, a < x[j] < x[n] = b, j = 1:n-1.
-# endpt = "Both"    Lobatto,     a = x[1] < x[j] < x[n] = b, j = 2:n-1.
+# endpt = neither   Default,     a < x[j] < b, j = 1:n.
+# endpt = left      Left Radau,  a = x[1] < x[j] < b, j = 2:n.
+# endpt = right     Right Radau, a < x[j] < x[n] = b, j = 1:n-1.
+# endpt = both      Lobatto,     a = x[1] < x[j] < x[n] = b, j = 2:n-1.
 #
-# Only the first letter of endpt is significant, so for instance
-# endpt = 'B' (or "B") gives a Lobatto rule.
+# These labels make up an enumeration of type EndPt.
 #
 # The code uses the Golub and Welsch algorithm, in which the abscissae
 # x[j] are the eigenvalues of a symmetric tridiagonal matrix whose 
@@ -72,6 +71,8 @@ module GaussQuadrature
 #       Hall, Englewood Cliffs, N.J., 1966.
 
 using Base
+
+export neither, left, right, both
 export legendre, legendre_coeff
 export chebyshev, chebyshev_coeff
 export jacobi, jacobi_coeff
@@ -79,15 +80,21 @@ export laguerre, laguerre_coeff
 export hermite, hermite_coeff
 export custom_gauss_rule, orthonormal_poly
 
-function legendre(n, endpt="Neither")
-    endpt = uppercase(endpt)
-    @assert endpt[1] in {'N', 'B', 'L', 'R'}
-    a, b, muzero = legendre_coeff(n, endpt)
-    x, w = custom_gauss_rule(-1.0, 1.0, a, b, muzero, endpt)
-    return x, w
+immutable EndPt
+    label :: String
 end
 
-function legendre_coeff(n, endpt)
+const neither = EndPt("NEITHER")
+const left    = EndPt("LEFT")
+const right   = EndPt("RIGHT")
+const both    = EndPt("BOTH")
+
+function legendre(n::Integer, endpt::EndPt=neither)
+    a, b, muzero = legendre_coeff(n, endpt)
+    return custom_gauss_rule(-1.0, 1.0, a, b, muzero, endpt)
+end
+
+function legendre_coeff(n::Integer, endpt::EndPt)
     muzero = 2.0
     a = zeros(n)
     b = zeros(n)
@@ -97,17 +104,14 @@ function legendre_coeff(n, endpt)
     return a, b, muzero
 end
 
-function chebyshev(n, kind=1, endpt="Neither")
+function chebyshev(n, kind=1, endpt::EndPt=neither)
     @assert kind in {1, 2}
-    endpt = uppercase(endpt)
-    @assert endpt[1] in {'N', 'B', 'L', 'R'}
     a, b, muzero = chebyshev_coeff(n, kind, endpt)
-    x, w = custom_gauss_rule(-1.0, 1.0, a, b, muzero, endpt)
-    return x, w
+    return custom_gauss_rule(-1.0, 1.0, a, b, muzero, endpt)
 end
 
-function chebyshev_coeff(n, kind, endpt)
-    muzero = pi
+function chebyshev_coeff(n, kind, endpt::EndPt)
+    muzero = convert(FloatingPoint, pi)
     a = zeros(n)
     b = fill(0.5, n)
     if kind == 1
@@ -120,16 +124,13 @@ function chebyshev_coeff(n, kind, endpt)
     return a, b, muzero
 end
 
-function jacobi(n, alpha, beta, endpt="Neither")
+function jacobi(n, alpha, beta, endpt::EndPt=neither)
     @assert alpha > -1.0 && beta > -1.0
-    endpt = uppercase(endpt)
-    @assert endpt[1] in {'N', 'B', 'L', 'R'}
     a, b, muzero = jacobi_coeff(n, alpha, beta, endpt)
-    x, w = custom_gauss_rule(-1.0, 1.0, a, b, muzero, endpt)
-    return x, w
+    custom_gauss_rule(-1.0, 1.0, a, b, muzero, endpt)
 end
 
-function jacobi_coeff(n, alpha, beta, endpt)
+function jacobi_coeff(n, alpha, beta, endpt::EndPt)
     ab = alpha + beta
     i = 2
     abi = ab + 2
@@ -149,16 +150,14 @@ function jacobi_coeff(n, alpha, beta, endpt)
     return a, b, muzero
 end
 
-function laguerre(n, alpha=0.0, endpt="Neither")
+function laguerre(n, alpha=0.0, endpt::EndPt=neither)
     @assert alpha > -1.0
-    endpt = uppercase(endpt)
-    @assert endpt[1] in {'N', 'L'}
     a, b, muzero = laguerre_coeff(n, alpha, endpt)
-    x, w = custom_gauss_rule(0.0, Inf, a, b, muzero, endpt)
-    return x, w
+    custom_gauss_rule(0.0, Inf, a, b, muzero, endpt)
 end
 
-function laguerre_coeff(n, alpha, endpt)
+function laguerre_coeff(n, alpha, endpt::EndPt)
+    @assert endpt in {neither, left}
     muzero = gamma(alpha+1)
     a = zeros(n)
     b = zeros(n)
@@ -171,8 +170,7 @@ end
 
 function hermite(n)
     a, b, muzero = hermite_coeff(n)
-    x, w = custom_gauss_rule(-Inf, Inf, a, b, muzero, "Neither")
-    return x, w
+    custom_gauss_rule(-Inf, Inf, a, b, muzero, neither)
 end
 
 function hermite_coeff(n)
@@ -185,24 +183,45 @@ function hermite_coeff(n)
     return a, b, muzero
 end
 
-function custom_gauss_rule(lo, hi, a, b, muzero, endpt)
-    endpt = uppercase(endpt)
-    @assert endpt[1] in {'N', 'B', 'L', 'R'}
+function custom_gauss_rule{T<:FloatingPoint}(lo::T, hi::T, 
+         a::Array{T,1}, b::Array{T,1}, muzero::T, endpt::EndPt)
+    #
+    # On entry:
+    #
+    # a, b hold the coefficients (as given, for instance, by
+    # legendre_coeff!) in the three-term recurrence relation
+    # for the orthonormal polynomials p_0, p_1, p_2, ... , that is,
+    #
+    #    b[j] p (x) = (x-a[j]) p   (x) - b[j-1] p   (x).
+    #          j                j-1              j-2
+    #      
+    # muzero holds the zeroth moment of the weight function, that is
+    #
+    #              / hi
+    #             |
+    #    muzero = | w(x) dx.
+    #             |
+    #             / lo
+    #
+    # On return:
+    #
+    # x, w hold the points and weights.
+    #
     n = length(a)
     @assert length(b) == n
-    if endpt[1] == 'L'     # left end
+    if endpt == left 
         if n == 1
             a[1] = lo
         else
             a[n] = solve(n, lo, a, b) * b[n-1]^2 + lo
         end
-    elseif endpt[1] == 'R' # right end
+    elseif endpt == right
         if n == 1
             a[1] = hi
         else
             a[n] = solve(n, hi, a, b) * b[n-1]^2 + hi
         end
-    elseif endpt[1] == 'B' # both ends
+    elseif endpt == both
         if n == 1 
             error("Must have at least two points for both ends.")
         end 

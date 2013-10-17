@@ -1,13 +1,13 @@
 using GaussQuadrature
 
 function variant(endpt)
-    if endpt == 'N'
+    if endpt == neither
         return "Default    "
-    elseif endpt == 'L'
+    elseif endpt == left
         return "Left Radau "
-    elseif endpt == 'R'
+    elseif endpt == right
         return "Right Radau"
-    elseif endpt == 'B'
+    elseif endpt == both
         return "Lobatto    "
     else
         error("Unknown endpt")
@@ -44,28 +44,29 @@ laguerreintegral(alpha) = Beta(1, 1+alpha)
 
 hermiteintegral(a) = sqrt(pi) * exp(a^2)
 
-table(x -> 1/(1+x^2), legendre, "Legendre", pi/2, 18, "NLRB")
+endpts = [neither, left, right, both]
+table(x -> 1/(1+x^2), legendre, "Legendre", pi/2, 18, endpts)
 
 c = 3.0
 table(x -> 1.0/(x+c), 
       (n, endpt) -> chebyshev(n, 1, endpt), "Chebyshev (kind=1)",
-      jacobiintegral(-0.5, -0.5, c), 18, "NLRB")
+      jacobiintegral(-0.5, -0.5, c), 18, endpts)
 
 table(x -> 1.0/(x+c)^3.0, 
       (n, endpt) -> chebyshev(n, 2, endpt), "Chebyshev (kind=2)",
-      jacobiintegral(0.5, 0.5, c), 18, "NLRB")
+      jacobiintegral(0.5, 0.5, c), 18, endpts)
 
 alpha = 0.4
 beta = -0.2
 table(x -> 1.0/(x+c)^(alpha+beta+2), 
       (n, endpt) -> jacobi(n, alpha, beta, endpt), "Jacobi", 
-      jacobiintegral(alpha, beta, c), 18, "NLRB")
+      jacobiintegral(alpha, beta, c), 18, endpts)
 
 table(x -> laguerrfunc(x, alpha), 
       (n, endpt) -> laguerre(n, alpha, endpt), "Laguerre",
-      laguerreintegral(alpha), 20, "NL")
+      laguerreintegral(alpha), 20, [neither, left])
 
 a = 1.2
 table(x -> exp(2*a*x), (n, endpt) -> hermite(n), "Hermite",
-      hermiteintegral(a), 18, "N")
+      hermiteintegral(a), 18, [neither])
 

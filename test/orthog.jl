@@ -50,9 +50,9 @@ function discrepancy(n, dop, w, p)
 end
 
 function dop(n, endpt)
-    if endpt[1] == 'N'
+    if endpt == neither
         return 2*n - 1
-    elseif endpt[1] == 'L' || endpt[1] == 'R'
+    elseif endpt == left || endpt == right
         return 2*n - 2
     else
         return 2*n - 3
@@ -76,17 +76,17 @@ function test_rule(descr, nmin, nmax, rule, coeff, name, endpt)
     end
 end
 
-test_rule("plain Gauss", 1, 5, rule, coeff, name, "Neither")
+test_rule("plain Gauss", 1, 5, rule, coeff, name, neither)
 
 filter!(x->(x!=xhermite), rule)
 filter!(x->(x!=xhermite_coeff), coeff)
 filter!(x->(x!="Hermite"), name)
 
-test_rule("left Radau", 1, 5, rule, coeff, name, "Left")
+test_rule("left Radau", 1, 5, rule, coeff, name, left)
 
 filter!(x->(x!=xlaguerre), rule)
 filter!(x->(x!=xlaguerre_coeff), coeff)
 filter!(x->(x!="Laguerre"), name)
 
-test_rule("right Radau", 1, 5, rule, coeff, name, "Right")
-test_rule("Lobatto", 2, 5, rule, coeff, name, "Both")
+test_rule("right Radau", 1, 5, rule, coeff, name, right)
+test_rule("Lobatto", 2, 5, rule, coeff, name, both)
