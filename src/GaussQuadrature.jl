@@ -84,38 +84,43 @@ immutable EndPt
     label :: String
 end
 
-neither = EndPt("NEITHER")
-left = EndPt("LEFT")
-right = EndPt("RIGHT")
-both = EndPt("BOTH")
+const neither = EndPt("NEITHER")
+const left    = EndPt("LEFT")
+const right   = EndPt("RIGHT")
+const both    = EndPt("BOTH")
 
-function legendre(n::Integer, endpt::EndPt=neither)
-    a, b, muzero = legendre_coeff(n, endpt)
-    return custom_gauss_rule(-1.0, 1.0, a, b, muzero, endpt)
+function legendre{T<:FloatingPoint}(n::Integer, endpt::EndPt=neither, 
+                                    ::Type{T}=Float64)
+    a, b, muzero = legendre_coeff(n, endpt, T)
+    return custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
 end
 
-function legendre_coeff(n::Integer, endpt::EndPt)
-    muzero = 2.0
-    a = zeros(n)
-    b = zeros(n)
+function legendre_coeff{T<:FloatingPoint}(n::Integer, endpt::EndPt, 
+                                          ::Type{T})
+    muzero = convert(T, 2.0)
+    a = zeros(T, n)
+    b = zeros(T, n)
     for i = 1:n
-        b[i] = i / sqrt(4*i^2-1)
+        b[i] = i / sqrt(convert(T, 4*i^2-1))
     end
     return a, b, muzero
 end
 
-function chebyshev(n, kind=1, endpt::EndPt=neither)
+function chebyshev{T<:FloatingPoint}(n::Integer, kind::Integer=1, 
+                            endpt::EndPt=neither, ::Type{T}=Float64)
     @assert kind in {1, 2}
-    a, b, muzero = chebyshev_coeff(n, kind, endpt)
-    return custom_gauss_rule(-1.0, 1.0, a, b, muzero, endpt)
+    a, b, muzero = chebyshev_coeff(n, kind, endpt, T)
+    return custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
 end
 
-function chebyshev_coeff(n, kind, endpt::EndPt)
-    muzero = pi
-    a = zeros(n)
-    b = fill(0.5, n)
+function chebyshev_coeff{T<:FloatingPoint}(n::Integer, kind::Integer, 
+                                           endpt::EndPt, ::Type{T})
+    muzero = convert(T, pi)
+    half = convert(T, 0.5)
+    a = zeros(T, n)
+    b = fill(half, n)
     if kind == 1
-        b[1] = sqrt(0.5)
+        b[1] = sqrt(half)
     elseif kind == 2
         muzero /= 2
     else
@@ -124,20 +129,22 @@ function chebyshev_coeff(n, kind, endpt::EndPt)
     return a, b, muzero
 end
 
-function jacobi(n, alpha, beta, endpt::EndPt=neither)
+function jacobi{T<:FloatingPoint}(n::Integer, alpha::T, beta::T, 
+                                  endpt::EndPt=neither)
     @assert alpha > -1.0 && beta > -1.0
     a, b, muzero = jacobi_coeff(n, alpha, beta, endpt)
-    custom_gauss_rule(-1.0, 1.0, a, b, muzero, endpt)
+    custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
 end
 
-function jacobi_coeff(n, alpha, beta, endpt::EndPt)
+function jacobi_coeff{T<:FloatingPoint}(n::Integer, alpha::T, 
+                                        beta::T, endpt::EndPt)
     ab = alpha + beta
     i = 2
     abi = ab + 2
     muzero = 2^(ab+1) * exp(
              lgamma(alpha+1) + lgamma(beta+1) - lgamma(abi) )
-    a = zeros(n)
-    b = zeros(n)
+    a = zeros(T, n)
+    b = zeros(T, n)
     a[1] = ( beta - alpha ) / abi
     b[1] = sqrt( 4*(alpha+1)*(beta+1) / ( (ab+3)*abi*abi ) )
     a2b2 = beta*beta - alpha*alpha
@@ -150,17 +157,19 @@ function jacobi_coeff(n, alpha, beta, endpt::EndPt)
     return a, b, muzero
 end
 
-function laguerre(n, alpha=0.0, endpt::EndPt=neither)
+function laguerre{T<:FloatingPoint}(n::Integer, alpha::T=zero(T), 
+                        endpt::EndPt=neither, ::Type{T}=Float64)
     @assert alpha > -1.0
     a, b, muzero = laguerre_coeff(n, alpha, endpt)
-    custom_gauss_rule(0.0, Inf, a, b, muzero, endpt)
+    custom_gauss_rule(zero(T), convert(T, Inf), a, b, muzero, endpt)
 end
 
-function laguerre_coeff(n, alpha, endpt::EndPt)
+function laguerre_coeff{T<:FloatingPoint}(n::Integer, alpha::T, 
+                                          endpt::EndPt)
     @assert endpt in {neither, left}
     muzero = gamma(alpha+1)
-    a = zeros(n)
-    b = zeros(n)
+    a = zeros(T, n)
+    b = zeros(T, n)
     for i = 1:n
         a[i] = 2i - 1 + alpha
         b[i] = sqrt( i*(alpha+i) )
@@ -168,17 +177,19 @@ function laguerre_coeff(n, alpha, endpt::EndPt)
     return a, b, muzero
 end
 
-function hermite(n)
-    a, b, muzero = hermite_coeff(n)
-    custom_gauss_rule(-Inf, Inf, a, b, muzero, neither)
+function hermite{T<:FloatingPoint}(n, ::Type{T}=Float64)
+    a, b, muzero = hermite_coeff(n, T)
+    custom_gauss_rule(convert(T, -Inf), convert(T, Inf), a, b, 
+                      muzero, neither)
 end
 
-function hermite_coeff(n)
-    muzero = sqrt(pi)
-    a = zeros(n)
-    b = zeros(n)
+function hermite_coeff{T}(n::Integer, ::Type{T}=Float64)
+    muzero = sqrt(convert(T, pi))
+    a = zeros(T, n)
+    b = zeros(T, n)
     for i = 1:n
-        b[i] = sqrt(i/2)
+        iT = convert(T, i)
+        b[i] = sqrt(iT/2)
     end
     return a, b, muzero
 end
