@@ -251,7 +251,16 @@ function custom_gauss_rule{T<:FloatingPoint}(lo::T, hi::T,
 end
 
 function solve(n, shift, a, b)
-
+    #
+    # Perform elimination to find the nth component s = delta[n]
+    # of the solution to the nxn linear system
+    #
+    #     ( J_n - shift I_n ) delta = e_n,
+    #
+    # where J_n is the symmetric tridiagonal matrix with diagonal
+    # entries a[i] and off-diagonal entries b[i], and e_n is the nth
+    # standard basis vector.
+    #
     t = a[1] - shift
     for i = 2:n-1
         t = a[i] - shift - b[i-1]^2 / t
