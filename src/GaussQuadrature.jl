@@ -268,6 +268,55 @@ function solve(n, shift, a, b)
     return one(t) / t
 end
 
+function steig!{T<:FloatingPoint}(d::Array{T,1}, e::Array{T,1}, 
+                                  z::Array{T,1}, maxits=30)
+    #
+    # Finds the eigenvalues and first components of the normalised
+    # eigenvectors of symmetric tridiagonal matrix by the imlicit
+    # QL method.
+    #
+    # d[i]   On entry, holds the ith diagonal entry of the matrix. 
+    #        On exit, holds the ith eigenvalue in ascending order.
+    #
+    # e[i]   On entry, holds the [i+1,i] entry of the matrix for
+    #        i = 1, 2, ..., n-1.  (The value of e[n] is not used.)
+    #        On exit, e is overwritten.
+    #
+    # z[i]   On exit, holds the first component of the ith normalised
+    #        eigenvector associated with d[i].
+    #
+    # maxits The maximum number of QL iterations.
+    #
+    # Martin and Wilkinson, Numer. Math. 12: 377-383 (1968).
+    # Dubrulle, Numer. Math. 15: 450 (1970).
+    # Handbook for Automatic Computation, Vol ii, Linear Algebra, 
+    #        pp. 241-248, 1971.
+    #
+    # This is a modified version of the Eispack routin imtql2.
+    #
+    n = length(z)
+    z[1] = 1
+    z[2:n] = 0
+    e[n] = 0
+
+    if n == 1 # Nothing to do for a 1x1 matrix.
+        return
+    end
+    for l = 1:n
+        # Look for small off-diagonal elements.
+        m = n
+        for j = l:n-1
+            if abs(e[j]) <= eps(T) * ( abs(d[j] + abs(d[j+1]) )
+                m = j
+                break   
+            end
+        end
+        p = d[l]
+        if m == l
+        end
+    end 
+end
+
 function orthonormal_poly(x, a, b, muzero)
     # p[i,j] = value at x[i] of orthonormal polynomial of degree j-1.
     m = length(x)
