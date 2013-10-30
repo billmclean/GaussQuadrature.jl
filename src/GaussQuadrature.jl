@@ -79,6 +79,7 @@ export jacobi, jacobi_coeff
 export laguerre, laguerre_coeff 
 export hermite, hermite_coeff
 export custom_gauss_rule, orthonormal_poly
+export steig!
 
 immutable EndPt
     label :: String
@@ -89,14 +90,16 @@ const left    = EndPt("LEFT")
 const right   = EndPt("RIGHT")
 const both    = EndPt("BOTH")
 
-function legendre{T<:FloatingPoint}(n::Integer, endpt::EndPt=neither, 
-                                    ::Type{T}=Float64)
-    a, b, muzero = legendre_coeff(n, endpt, T)
+function legendre{T<:FloatingPoint}(::Type{T}, 
+                 n::Integer, endpt::EndPt=neither)
+    a, b, muzero = legendre_coeff(T, n, endpt)
     return custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
 end
 
-function legendre_coeff{T<:FloatingPoint}(n::Integer, endpt::EndPt, 
-                                          ::Type{T})
+legendre(n, endpt=neither) = legendre(Float64, n, endpt)
+
+function legendre_coeff{T<:FloatingPoint}(::Type{T},
+                       n::Integer, endpt::EndPt)
     muzero = convert(T, 2.0)
     a = zeros(T, n)
     b = zeros(T, n)
@@ -106,15 +109,18 @@ function legendre_coeff{T<:FloatingPoint}(n::Integer, endpt::EndPt,
     return a, b, muzero
 end
 
-function chebyshev{T<:FloatingPoint}(n::Integer, kind::Integer=1, 
-                            endpt::EndPt=neither, ::Type{T}=Float64)
+function chebyshev{T<:FloatingPoint}(::Type{T},
+                  n::Integer, kind::Integer=1, endpt::EndPt=neither)
     @assert kind in {1, 2}
-    a, b, muzero = chebyshev_coeff(n, kind, endpt, T)
+    a, b, muzero = chebyshev_coeff(T, n, kind, endpt)
     return custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
 end
 
-function chebyshev_coeff{T<:FloatingPoint}(n::Integer, kind::Integer, 
-                                           endpt::EndPt, ::Type{T})
+chebyshev(n, kind=1, endpt=neither) = chebyshev(Float64, n, kind, 
+                                                endpt)
+
+function chebyshev_coeff{T<:FloatingPoint}(::Type{T},
+                        n::Integer, kind::Integer, endpt::EndPt)
     muzero = convert(T, pi)
     half = convert(T, 0.5)
     a = zeros(T, n)
@@ -157,8 +163,8 @@ function jacobi_coeff{T<:FloatingPoint}(n::Integer, alpha::T,
     return a, b, muzero
 end
 
-function laguerre{T<:FloatingPoint}(n::Integer, alpha::T=zero(T), 
-                        endpt::EndPt=neither, ::Type{T}=Float64)
+function laguerre{T<:FloatingPoint}(n::Integer, alpha::T, 
+                                    endpt::EndPt=neither)
     @assert alpha > -1.0
     a, b, muzero = laguerre_coeff(n, alpha, endpt)
     custom_gauss_rule(zero(T), convert(T, Inf), a, b, muzero, endpt)
@@ -177,13 +183,15 @@ function laguerre_coeff{T<:FloatingPoint}(n::Integer, alpha::T,
     return a, b, muzero
 end
 
-function hermite{T<:FloatingPoint}(n, ::Type{T}=Float64)
-    a, b, muzero = hermite_coeff(n, T)
+function hermite{T<:FloatingPoint}(::Type{T}, n::Integer)
+    a, b, muzero = hermite_coeff(T, n)
     custom_gauss_rule(convert(T, -Inf), convert(T, Inf), a, b, 
                       muzero, neither)
 end
 
-function hermite_coeff{T}(n::Integer, ::Type{T}=Float64)
+hermite(n) = hermite(Float64, n)
+
+function hermite_coeff{T}(::Type{T}, n::Integer)
     muzero = sqrt(convert(T, pi))
     a = zeros(T, n)
     b = zeros(T, n)
@@ -195,7 +203,8 @@ function hermite_coeff{T}(n::Integer, ::Type{T}=Float64)
 end
 
 function custom_gauss_rule{T<:FloatingPoint}(lo::T, hi::T, 
-         a::Array{T,1}, b::Array{T,1}, muzero::T, endpt::EndPt)
+         a::Array{T,1}, b::Array{T,1}, muzero::T, endpt::EndPt,
+         maxits=30)
     #
     # On entry:
     #
@@ -241,16 +250,17 @@ function custom_gauss_rule{T<:FloatingPoint}(lo::T, hi::T,
         b[n-1] = sqrt(t1)
         a[n] = lo + g * t1
     end
-    A = SymTridiagonal(a, b[1:n-1])
-    x, V = eig(A)
-    w = zero(x)
+    w = zero(a)
+    steig!(a, b, w, maxits)
     for i = 1:n
-        w[i] = muzero * V[1,i]^2
+        w[i] = muzero * w[i]^2
     end
-    return x, w
+    idx = sortperm(a)
+    return a[idx], w[idx]
 end
 
-function solve(n, shift, a, b)
+function solve{T<:FloatingPoint}(n::Integer, shift::T, 
+                                 a::Array{T,1}, b::Array{T,1})
     #
     # Perform elimination to find the nth component s = delta[n]
     # of the solution to the nxn linear system
@@ -269,14 +279,14 @@ function solve(n, shift, a, b)
 end
 
 function steig!{T<:FloatingPoint}(d::Array{T,1}, e::Array{T,1}, 
-                                  z::Array{T,1}, maxits=30)
+                                  z::Array{T,1}, maxits::Integer)
     #
     # Finds the eigenvalues and first components of the normalised
     # eigenvectors of symmetric tridiagonal matrix by the imlicit
     # QL method.
     #
     # d[i]   On entry, holds the ith diagonal entry of the matrix. 
-    #        On exit, holds the ith eigenvalue in ascending order.
+    #        On exit, holds the ith eigenvalue.
     #
     # e[i]   On entry, holds the [i+1,i] entry of the matrix for
     #        i = 1, 2, ..., n-1.  (The value of e[n] is not used.)
@@ -303,33 +313,77 @@ function steig!{T<:FloatingPoint}(d::Array{T,1}, e::Array{T,1},
         return
     end
     for l = 1:n
-        # Look for small off-diagonal elements.
-        m = n
-        for j = l:n-1
-            if abs(e[j]) <= eps(T) * ( abs(d[j] + abs(d[j+1]) )
-                m = j
-                break   
+        for j = 1:maxits
+            # Look for small off-diagonal elements.
+            m = n
+            for i = l:n-1
+                if abs(e[i]) <= eps(T) * ( abs(d[i]) + abs(d[i+1]) )
+                    m = i
+                    break   
+                end
             end
-        end
-        p = d[l]
-        if m == l
-        end
-    end 
+            p = d[l]
+            if m == l
+                continue
+            end
+            if j == maxits
+                msg = @sprintf("No convergence after %d iterations", j)
+                error(msg)
+            end
+            # Form shift
+            g = ( d[l+1] - p ) / ( 2 * e[l] )
+            r = hypot(g, one(T))
+            g = d[m] - p + e[l] / ( g + copysign(r, g) )
+            s = one(T)
+            c = one(T)
+            p = zero(T)
+            for i = m-1:-1:l
+                f = s * e[i]
+                b = c * e[i]
+                if abs(f) <  abs(g)
+                    s = f / g
+                    r = hypot(s, one(T))
+                    e[i+1] = g * r
+                    c = one(T) / r
+                    s *= c
+                else
+                    c = g / f
+                    r = hypot(c, one(T))
+                    e[i+1] = f * r
+                    s = one(T) / r
+                    c *= s
+                end 
+                g = d[i+1] - p
+                r = ( d[i] - g ) * s + 2 * c * b
+                p = s * r
+                d[i+1] = g + p
+                g = c * r - b
+                # Form first component of vector.
+                f = z[i+1]
+                z[i+1] = s * z[i] + c * f
+                z[i]   = c * z[i] - s * f
+            end # loop over i
+            d[l] -= p
+            e[l] = g
+            e[m] = zero(T)
+        end # loop over j
+    end # loop over l
 end
 
-function orthonormal_poly(x, a, b, muzero)
+function orthonormal_poly{T<:FloatingPoint}(x::Array{T,1}, 
+                         a::Array{T,1}, b::Array{T,1}, muzero::T)
     # p[i,j] = value at x[i] of orthonormal polynomial of degree j-1.
     m = length(x)
     n = length(a)
-    p = zeros(m,n+1)
-    c = 1.0 / sqrt(muzero)
-    rb = 1.0 / b[1]
+    p = zeros(T, m, n+1)
+    c = one(T) / sqrt(muzero)
+    rb = one(T) / b[1]
     for i = 1:m
         p[i,1] = c
         p[i,2] = rb * ( x[i] - a[1] ) * c
     end 
     for j = 2:n
-       rb = 1.0 / b[j]
+       rb = one(T) / b[j]
        for i = 1:m
            p[i,j+1] = rb * ( (x[i]-a[j]) * p[i,j] 
                                 - b[j-1] * p[i,j-1] )

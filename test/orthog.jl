@@ -2,16 +2,19 @@
 
 using GaussQuadrature
 
-xlegendre(n, alpha, beta, endpt) = legendre(n, endpt)
-xchebyshev_first(n, alpha, beta, endpt) = chebyshev(n, 1, endpt)
-xchebyshev_second(n, alpha, beta, endpt) = chebyshev(n, 2, endpt)
-xhermite(n, alpha, beta, endpt) = hermite(n)
+T = BigFloat
+xlegendre(n, alpha, beta, endpt) = legendre(T, n, endpt)
+xchebyshev_first(n, alpha, beta, endpt) = chebyshev(T, n, 1, endpt)
+xchebyshev_second(n, alpha, beta, endpt) = chebyshev(T, n, 2, endpt)
+xhermite(n, alpha, beta, endpt) = hermite(T, n)
 xlaguerre(n, alpha, beta, endpt) = laguerre(n, alpha, endpt)
 
-xlegendre_coeff(n, alpha, beta, endpt) = legendre_coeff(n, endpt)
-xchebyshev_first_coeff(n, alpha, beta, endpt) = chebyshev_coeff(n, 1, endpt)
-xchebyshev_second_coeff(n, alpha, beta, endpt) = chebyshev_coeff(n, 2, endpt)
-xhermite_coeff(n, alpha, beta, endpt) = hermite_coeff(n)
+xlegendre_coeff(n, alpha, beta, endpt) = legendre_coeff(T, n, endpt)
+xchebyshev_first_coeff(n, alpha, beta, endpt) = chebyshev_coeff(T, 
+                                                n, 1, endpt)
+xchebyshev_second_coeff(n, alpha, beta, endpt) = chebyshev_coeff(T, 
+                                                 n, 2, endpt)
+xhermite_coeff(n, alpha, beta, endpt) = hermite_coeff(T, n)
 xlaguerre_coeff(n, alpha, beta, endpt) = laguerre_coeff(n, alpha, endpt)
 
 rule = [xlegendre, xchebyshev_first, xchebyshev_second, 
@@ -24,8 +27,8 @@ coeff = [ xlegendre_coeff, xchebyshev_first_coeff,
 name = ["Legendre", "Chebyshev (first)", "Chebyshev (second)",
          "Hermite", "Jacobi", "Laguerre" ]
 
-alpha = 1.0
-beta  = 0.5
+alpha = one(T)
+beta  = one(T)/2
 xargs = [(),(1),(2), (), (alpha, beta), (alpha)]
 
 function discrepancy(n, dop, w, p)
@@ -75,6 +78,8 @@ function test_rule(descr, nmin, nmax, rule, coeff, name, endpt)
         @printf("\t%s: %12.4e\n", rpad(rulename, 20, ' '), maxd)
     end
 end
+
+print("\nFloating point type data type is ", T, '\n')
 
 test_rule("plain Gauss", 1, 5, rule, coeff, name, neither)
 
