@@ -45,13 +45,13 @@ module GaussQuadrature
 # beta > -1, so that the weight function is integrable.
 #
 # Use the endpt argument to include one or both of the end points
-# of the interval of integration as an abscissa in the the quadrature 
+# of the interval of integration as an abscissa in the quadrature 
 # rule, as follows.
 # 
-# endpt = neither   Default,     a < x[j] < b, j = 1:n.
-# endpt = left      Left Radau,  a = x[1] < x[j] < b, j = 2:n.
-# endpt = right     Right Radau, a < x[j] < x[n] = b, j = 1:n-1.
-# endpt = both      Lobatto,     a = x[1] < x[j] < x[n] = b, j = 2:n-1.
+# endpt = neither   Default      a < x[j] < b, j = 1:n.
+# endpt = left      Left Radau   a = x[1] < x[j] < b, j = 2:n.
+# endpt = right     Right Radau  a < x[j] < x[n] = b, j = 1:n-1.
+# endpt = both      Lobatto      a = x[1] < x[j] < x[n] = b, j = 2:n-1.
 #
 # These labels make up an enumeration of type EndPt.
 #
@@ -62,8 +62,8 @@ module GaussQuadrature
 #
 # References:
 #
-#   1.  Golub, G. H., and Welsch, J. H., Calculation of gaussian
-#       quadrature rules, Mathematics of Computation 23 (april,
+#   1.  Golub, G. H., and Welsch, J. H., Calculation of Gaussian
+#       quadrature rules, Mathematics of Computation 23 (April,
 #       1969), pp. 221-230.
 #   2.  Golub, G. H., Some modified matrix eigenvalue problems,
 #       Siam Review 15 (april, 1973), pp. 318-334 (section 7).
@@ -90,6 +90,10 @@ const left    = EndPt("LEFT")
 const right   = EndPt("RIGHT")
 const both    = EndPt("BOTH")
 
+# Maximum number of QL iterations used by steig!.
+# You might need to increase this.
+maxiterations = { Float32 => 30, Float64 => 30, BigFloat => 40 }
+
 function legendre{T<:FloatingPoint}(::Type{T}, 
                  n::Integer, endpt::EndPt=neither)
     a, b, muzero = legendre_coeff(T, n, endpt)
@@ -111,7 +115,6 @@ end
 
 function chebyshev{T<:FloatingPoint}(::Type{T},
                   n::Integer, kind::Integer=1, endpt::EndPt=neither)
-    @assert kind in {1, 2}
     a, b, muzero = chebyshev_coeff(T, n, kind, endpt)
     return custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
 end
@@ -204,12 +207,12 @@ end
 
 function custom_gauss_rule{T<:FloatingPoint}(lo::T, hi::T, 
          a::Array{T,1}, b::Array{T,1}, muzero::T, endpt::EndPt,
-         maxits=30)
+         maxits::Integer=maxiterations[T])
     #
     # On entry:
     #
     # a, b hold the coefficients (as given, for instance, by
-    # legendre_coeff!) in the three-term recurrence relation
+    # legendre_coeff) in the three-term recurrence relation
     # for the orthonormal polynomials p_0, p_1, p_2, ... , that is,
     #
     #    b[j] p (x) = (x-a[j]) p   (x) - b[j-1] p   (x).
@@ -282,7 +285,7 @@ function steig!{T<:FloatingPoint}(d::Array{T,1}, e::Array{T,1},
                                   z::Array{T,1}, maxits::Integer)
     #
     # Finds the eigenvalues and first components of the normalised
-    # eigenvectors of symmetric tridiagonal matrix by the imlicit
+    # eigenvectors of a symmetric tridiagonal matrix by the implicit
     # QL method.
     #
     # d[i]   On entry, holds the ith diagonal entry of the matrix. 
@@ -302,7 +305,7 @@ function steig!{T<:FloatingPoint}(d::Array{T,1}, e::Array{T,1},
     # Handbook for Automatic Computation, Vol ii, Linear Algebra, 
     #        pp. 241-248, 1971.
     #
-    # This is a modified version of the Eispack routin imtql2.
+    # This is a modified version of the Eispack routine imtql2.
     #
     n = length(z)
     z[1] = 1
@@ -328,6 +331,7 @@ function steig!{T<:FloatingPoint}(d::Array{T,1}, e::Array{T,1},
             end
             if j == maxits
                 msg = @sprintf("No convergence after %d iterations", j)
+                msg *= " (try increasing maxits)"
                 error(msg)
             end
             # Form shift

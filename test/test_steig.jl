@@ -1,8 +1,14 @@
 
 using GaussQuadrature
 
-d = [3.0, -2.0, 7.0, 6.0]
-e = [-1.0, 0.0, 4.0, -2.0]
+T = Float64
+
+print("\nFloating point data type is ", T, '\n')
+@printf("\teps = %0.2e\n\n", eps(T))
+
+n = 10
+d = rand(T, n)
+e = rand(T, n)
 z = zero(d)
 
 A = SymTridiagonal(d, e[1:end-1])
@@ -22,5 +28,6 @@ end
 @printf("\nFirst component of eigenvectors:\n\n")
 @printf("%20s  %20s  %12s\n\n", "eig", "steig!", "difference")
 for i=1:length(d)
-    @printf("%20.15f  %20.15f  %12.2e\n", z[i], V[1,i], z[i]-V[1,i])
+    @printf("%20.15f  %20.15f  %12.2e\n", z[i], V[1,i], 
+            abs(z[i])-abs(V[1,i]))
 end

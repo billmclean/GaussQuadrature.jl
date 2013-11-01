@@ -3,6 +3,9 @@
 using GaussQuadrature
 
 T = BigFloat
+print("\nFloating point type data type is ", T, '\n')
+@printf("\teps = %0.2e\n\n", eps(T))
+
 xlegendre(n, alpha, beta, endpt) = legendre(T, n, endpt)
 xchebyshev_first(n, alpha, beta, endpt) = chebyshev(T, n, 1, endpt)
 xchebyshev_second(n, alpha, beta, endpt) = chebyshev(T, n, 2, endpt)
@@ -78,8 +81,6 @@ function test_rule(descr, nmin, nmax, rule, coeff, name, endpt)
         @printf("\t%s: %12.4e\n", rpad(rulename, 20, ' '), maxd)
     end
 end
-
-print("\nFloating point type data type is ", T, '\n')
 
 test_rule("plain Gauss", 1, 5, rule, coeff, name, neither)
 

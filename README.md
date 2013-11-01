@@ -15,5 +15,9 @@ Read the initial comments in the src/GaussQuadrature.jl module
 for full details.
 
 Changelog: 
+
 2013-10-12 
 Initial release, version 0.1, tested with Julia 0.2 pre-release.
+
+2013-11-01
+Version 0.2, with support for arbitrary FloatingPoint arithmetic.
