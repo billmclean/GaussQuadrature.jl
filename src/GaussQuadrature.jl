@@ -38,7 +38,7 @@ module GaussQuadrature
 # Chebyshev (first kind)   -1 < x < 1     1 / sqrt(1-x^2)        
 # Chebyshev (second kind)  -1 < x < 1       sqrt(1-x^2)          
 # Jacobi                   -1 < x < 1   (1-x)^alpha (1+x)^beta  
-# Laguerre                 -1 < x < oo     x^alpha exp(-x)
+# Laguerre                 0 < x < oo     x^alpha exp(-x)
 # Hermite                 -oo < x < oo      exp(-x^2)
 #
 # For the Jacobi and Laguerre rules we require alpha > -1 and
