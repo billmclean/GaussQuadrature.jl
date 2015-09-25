@@ -12,7 +12,8 @@ julia> using GaussQuadrature
 julia> x, w = legendre(5)
 
 Read the initial comments in the src/GaussQuadrature.jl module
-for full details.
+for full details, or read the help documentation for the individual
+functions called legendre, chebyshev, jacobi, laguerre and hermite.  
 
 Changelog: 
 
@@ -21,3 +22,8 @@ Initial release, version 0.1, tested with Julia 0.2 pre-release.
 
 2013-11-01
 Version 0.2, with support for arbitrary FloatingPoint arithmetic.
+Works with Julia 0.3.
+
+2015-09-25
+Version 0.3, remove deprecated features for Julia 0.4, add 
+documentation for individual functions.
