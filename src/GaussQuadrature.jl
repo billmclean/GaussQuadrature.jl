@@ -82,7 +82,7 @@ export custom_gauss_rule, orthonormal_poly
 export steig!
 
 immutable EndPt
-    label :: String
+    label :: ASCIIString
 end
 
 const neither = EndPt("NEITHER")
@@ -92,9 +92,9 @@ const both    = EndPt("BOTH")
 
 # Maximum number of QL iterations used by steig!.
 # You might need to increase this.
-maxiterations = { Float32 => 30, Float64 => 30, BigFloat => 40 }
+maxiterations = Dict(Float32 => 30, Float64 => 30, BigFloat => 40)
 
-function legendre{T<:FloatingPoint}(::Type{T}, 
+function legendre{T<:AbstractFloat}(::Type{T}, 
                  n::Integer, endpt::EndPt=neither)
     a, b, muzero = legendre_coeff(T, n, endpt)
     return custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
@@ -102,7 +102,7 @@ end
 
 legendre(n, endpt=neither) = legendre(Float64, n, endpt)
 
-function legendre_coeff{T<:FloatingPoint}(::Type{T},
+function legendre_coeff{T<:AbstractFloat}(::Type{T},
                        n::Integer, endpt::EndPt)
     muzero = convert(T, 2.0)
     a = zeros(T, n)
@@ -113,7 +113,7 @@ function legendre_coeff{T<:FloatingPoint}(::Type{T},
     return a, b, muzero
 end
 
-function chebyshev{T<:FloatingPoint}(::Type{T},
+function chebyshev{T<:AbstractFloat}(::Type{T},
                   n::Integer, kind::Integer=1, endpt::EndPt=neither)
     a, b, muzero = chebyshev_coeff(T, n, kind, endpt)
     return custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
@@ -122,7 +122,7 @@ end
 chebyshev(n, kind=1, endpt=neither) = chebyshev(Float64, n, kind, 
                                                 endpt)
 
-function chebyshev_coeff{T<:FloatingPoint}(::Type{T},
+function chebyshev_coeff{T<:AbstractFloat}(::Type{T},
                         n::Integer, kind::Integer, endpt::EndPt)
     muzero = convert(T, pi)
     half = convert(T, 0.5)
@@ -138,14 +138,14 @@ function chebyshev_coeff{T<:FloatingPoint}(::Type{T},
     return a, b, muzero
 end
 
-function jacobi{T<:FloatingPoint}(n::Integer, alpha::T, beta::T, 
+function jacobi{T<:AbstractFloat}(n::Integer, alpha::T, beta::T, 
                                   endpt::EndPt=neither)
     @assert alpha > -1.0 && beta > -1.0
     a, b, muzero = jacobi_coeff(n, alpha, beta, endpt)
     custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
 end
 
-function jacobi_coeff{T<:FloatingPoint}(n::Integer, alpha::T, 
+function jacobi_coeff{T<:AbstractFloat}(n::Integer, alpha::T, 
                                         beta::T, endpt::EndPt)
     ab = alpha + beta
     i = 2
@@ -166,16 +166,16 @@ function jacobi_coeff{T<:FloatingPoint}(n::Integer, alpha::T,
     return a, b, muzero
 end
 
-function laguerre{T<:FloatingPoint}(n::Integer, alpha::T, 
+function laguerre{T<:AbstractFloat}(n::Integer, alpha::T, 
                                     endpt::EndPt=neither)
     @assert alpha > -1.0
     a, b, muzero = laguerre_coeff(n, alpha, endpt)
     custom_gauss_rule(zero(T), convert(T, Inf), a, b, muzero, endpt)
 end
 
-function laguerre_coeff{T<:FloatingPoint}(n::Integer, alpha::T, 
+function laguerre_coeff{T<:AbstractFloat}(n::Integer, alpha::T, 
                                           endpt::EndPt)
-    @assert endpt in {neither, left}
+    @assert endpt in [neither, left]
     muzero = gamma(alpha+1)
     a = zeros(T, n)
     b = zeros(T, n)
@@ -186,7 +186,7 @@ function laguerre_coeff{T<:FloatingPoint}(n::Integer, alpha::T,
     return a, b, muzero
 end
 
-function hermite{T<:FloatingPoint}(::Type{T}, n::Integer)
+function hermite{T<:AbstractFloat}(::Type{T}, n::Integer)
     a, b, muzero = hermite_coeff(T, n)
     custom_gauss_rule(convert(T, -Inf), convert(T, Inf), a, b, 
                       muzero, neither)
@@ -205,7 +205,7 @@ function hermite_coeff{T}(::Type{T}, n::Integer)
     return a, b, muzero
 end
 
-function custom_gauss_rule{T<:FloatingPoint}(lo::T, hi::T, 
+function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T, 
          a::Array{T,1}, b::Array{T,1}, muzero::T, endpt::EndPt,
          maxits::Integer=maxiterations[T])
     #
@@ -262,7 +262,7 @@ function custom_gauss_rule{T<:FloatingPoint}(lo::T, hi::T,
     return a[idx], w[idx]
 end
 
-function solve{T<:FloatingPoint}(n::Integer, shift::T, 
+function solve{T<:AbstractFloat}(n::Integer, shift::T, 
                                  a::Array{T,1}, b::Array{T,1})
     #
     # Perform elimination to find the nth component s = delta[n]
@@ -281,7 +281,7 @@ function solve{T<:FloatingPoint}(n::Integer, shift::T,
     return one(t) / t
 end
 
-function steig!{T<:FloatingPoint}(d::Array{T,1}, e::Array{T,1}, 
+function steig!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1}, 
                                   z::Array{T,1}, maxits::Integer)
     #
     # Finds the eigenvalues and first components of the normalised
@@ -374,7 +374,7 @@ function steig!{T<:FloatingPoint}(d::Array{T,1}, e::Array{T,1},
     end # loop over l
 end
 
-function orthonormal_poly{T<:FloatingPoint}(x::Array{T,1}, 
+function orthonormal_poly{T<:AbstractFloat}(x::Array{T,1}, 
                          a::Array{T,1}, b::Array{T,1}, muzero::T)
     # p[i,j] = value at x[i] of orthonormal polynomial of degree j-1.
     m = length(x)
