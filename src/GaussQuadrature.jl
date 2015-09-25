@@ -70,8 +70,6 @@ module GaussQuadrature
 #   3.  Stroud and Secrest, Gaussian Quadrature Formulas, Prentice-
 #       Hall, Englewood Cliffs, N.J., 1966.
 
-using Base
-
 export neither, left, right, both
 export legendre, legendre_coeff
 export chebyshev, chebyshev_coeff
@@ -94,12 +92,26 @@ const both    = EndPt("BOTH")
 # You might need to increase this.
 maxiterations = Dict(Float32 => 30, Float64 => 30, BigFloat => 40)
 
+"""
+x, w = legendre(T, n, endpt=neither)
+
+Returns points x and weights w for the n-point Gauss-Legendre rule
+for the interval -1 < x < 1 with weight function w(x) = 1.
+
+Use endpt=left, right, both for the left Radau, right Radau, Lobatto 
+rules.
+"""
 function legendre{T<:AbstractFloat}(::Type{T}, 
                  n::Integer, endpt::EndPt=neither)
     a, b, muzero = legendre_coeff(T, n, endpt)
     return custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
 end
 
+"""
+x, w = legendre(n, endpt=neither)
+
+Convenience function with type T = Float64.
+"""
 legendre(n, endpt=neither) = legendre(Float64, n, endpt)
 
 function legendre_coeff{T<:AbstractFloat}(::Type{T},
@@ -113,12 +125,29 @@ function legendre_coeff{T<:AbstractFloat}(::Type{T},
     return a, b, muzero
 end
 
+"""
+x, w = chebyshev(T, n, kind=1, endpt=neither)
+
+Returns points x and weights w for the n-point Gauss-Chebyshev rule
+for the interval -1 < x < 1 with weight function
+
+    w(x) = 1 / sqrt(1-x^2) if kind=1
+    w(x) = sqrt(1-x^2)     if kind=2.
+
+Use endpt=left, right, both for the left Radau, right Radau, Lobatto 
+rules.
+"""
 function chebyshev{T<:AbstractFloat}(::Type{T},
                   n::Integer, kind::Integer=1, endpt::EndPt=neither)
     a, b, muzero = chebyshev_coeff(T, n, kind, endpt)
     return custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
 end
 
+"""
+x, w = chebyshev(n, kind=1, endpt=neither)
+
+Convenience function with type T = Float64.
+"""
 chebyshev(n, kind=1, endpt=neither) = chebyshev(Float64, n, kind, 
                                                 endpt)
 
@@ -138,6 +167,17 @@ function chebyshev_coeff{T<:AbstractFloat}(::Type{T},
     return a, b, muzero
 end
 
+"""
+x, w = jacobi(n, alpha, beta, endpt=neither)
+
+Returns points x and weights w for the n-point Gauss-Jacobi rule
+for the interval -1 < x < 1 with weight function
+
+    w(x) = (1-x)^alpha (1+x)^beta.
+
+Use endpt=left, right, both for the left Radau, right Radau, Lobatto 
+rules.
+"""
 function jacobi{T<:AbstractFloat}(n::Integer, alpha::T, beta::T, 
                                   endpt::EndPt=neither)
     @assert alpha > -1.0 && beta > -1.0
@@ -166,6 +206,16 @@ function jacobi_coeff{T<:AbstractFloat}(n::Integer, alpha::T,
     return a, b, muzero
 end
 
+"""
+x, w = laguerre(n, alpha, endpt=neither)
+
+Returns points x and weights w for the n-point Gauss-Laguerre rule
+for the interval 0 < x < oo with weight function
+
+    w(x) = x^alpha exp(-x)
+
+Use endpt=left for the left Radau rule.
+"""
 function laguerre{T<:AbstractFloat}(n::Integer, alpha::T, 
                                     endpt::EndPt=neither)
     @assert alpha > -1.0
@@ -186,12 +236,25 @@ function laguerre_coeff{T<:AbstractFloat}(n::Integer, alpha::T,
     return a, b, muzero
 end
 
+"""
+x, w = hermite(T, n)
+
+Returns points x and weights w for the n-point Gauss-Laguerre rule
+for the interval -oo < x < oo with weight function
+
+    w(x) = exp(-x^2).
+"""
 function hermite{T<:AbstractFloat}(::Type{T}, n::Integer)
     a, b, muzero = hermite_coeff(T, n)
     custom_gauss_rule(convert(T, -Inf), convert(T, Inf), a, b, 
                       muzero, neither)
 end
 
+"""
+x, w = hermite(n)
+
+Convenience function with type T = Float64.
+"""
 hermite(n) = hermite(Float64, n)
 
 function hermite_coeff{T}(::Type{T}, n::Integer)
