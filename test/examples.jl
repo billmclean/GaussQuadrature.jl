@@ -5,22 +5,23 @@ T = BigFloat
 print("\nFloating point data type is ", T, '\n')
 @printf("\teps = %0.2e\n\n", eps(T))
 
-npts = { Float32 => { "Legendre"  => 10, 
+npts = Dict( 
+    Float32 => Dict(  "Legendre"  => 10, 
                       "Chebyshev" => 10,
                       "Jacobi"    => 10,
                       "Laguerre"  => 10,
-                      "Hermite"   => 10 },
-         Float64 => { "Legendre"  => 20, 
+                      "Hermite"   => 10 ),
+    Float64 => Dict(  "Legendre"  => 20, 
                       "Chebyshev" => 12,
                       "Jacobi"    => 12,
                       "Laguerre"  => 20,
-                      "Hermite"   => 16 },
-         BigFloat => { "Legendre" => 100, 
+                      "Hermite"   => 16 ),
+    BigFloat => Dict( "Legendre" => 100, 
                       "Chebyshev" => 60,
                       "Jacobi"    => 60,
                       "Laguerre"  => 600,
-                      "Hermite"   => 80 }
-}
+                      "Hermite"   => 80 )
+)
 
 const half = one(T) / 2
 
