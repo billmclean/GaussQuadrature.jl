@@ -79,6 +79,11 @@ export hermite, hermite_coeff
 export custom_gauss_rule, orthonormal_poly
 export steig!
 
+"""
+Enumeration type used to specify which endpoints of the integration
+interval should be included amongst the quadrature points: neither,
+left, right or both.
+"""
 immutable EndPt
     label :: ASCIIString
 end
