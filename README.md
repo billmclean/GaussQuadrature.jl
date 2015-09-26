@@ -8,8 +8,8 @@ Handles the Legendre, Chebyshev, Jacobi, Laguerre and Hermite weights,
 and also provides the Lobatto and Radau variants of the Gauss rules.  
 For example, to obtain a plain 5-point Gauss-Legendre rule do
 
-julia> using GaussQuadrature
-julia> x, w = legendre(5)
+    julia> using GaussQuadrature
+    julia> x, w = legendre(5)
 
 Read the initial comments in the src/GaussQuadrature.jl module
 for full details, or read the help documentation for the individual
