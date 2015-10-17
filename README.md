@@ -27,3 +27,6 @@ Works with Julia 0.3.
 2015-09-25
 Version 0.3, remove deprecated features for Julia 0.4, add 
 documentation for individual functions.
+
+2015-10-17
+Version 0.3.1, add basic test for Travis, register package.
