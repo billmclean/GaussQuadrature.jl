@@ -85,13 +85,13 @@ interval should be included amongst the quadrature points: neither,
 left, right or both.
 """
 immutable EndPt
-    label :: ASCIIString
+    label :: Char
 end
 
-const neither = EndPt("NEITHER")
-const left    = EndPt("LEFT")
-const right   = EndPt("RIGHT")
-const both    = EndPt("BOTH")
+const neither = EndPt('N')
+const left    = EndPt('L')
+const right   = EndPt('R')
+const both    = EndPt('B')
 
 # Maximum number of QL iterations used by steig!.
 # You might need to increase this.
