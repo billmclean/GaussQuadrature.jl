@@ -30,3 +30,7 @@ documentation for individual functions.
 
 2015-10-17
 Version 0.3.1, add basic test for Travis, register package.
+
+2016-07-16 
+Version 0.3.2, change EndPt label type to avoid deprecation warnings
+in Julia 0.5.
