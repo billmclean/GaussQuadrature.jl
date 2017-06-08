@@ -108,8 +108,8 @@ rules.
 """
 function legendre{T<:AbstractFloat}(::Type{T}, 
                  n::Integer, endpt::EndPt=neither)
-    a, b, muzero = legendre_coeff(T, n, endpt)
-    return custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
+    a, b, μ0 = legendre_coeff(T, n, endpt)
+    return custom_gauss_rule(-one(T), one(T), a, b, μ0, endpt)
 end
 
 """
@@ -121,13 +121,13 @@ legendre(n, endpt=neither) = legendre(Float64, n, endpt)
 
 function legendre_coeff{T<:AbstractFloat}(::Type{T},
                        n::Integer, endpt::EndPt)
-    muzero = convert(T, 2.0)
+    μ0 = convert(T, 2.0)
     a = zeros(T, n)
     b = zeros(T, n)
     for i = 1:n
         b[i] = i / sqrt(convert(T, 4*i^2-1))
     end
-    return a, b, muzero
+    return a, b, μ0
 end
 
 """
@@ -144,8 +144,8 @@ rules.
 """
 function chebyshev{T<:AbstractFloat}(::Type{T},
                   n::Integer, kind::Integer=1, endpt::EndPt=neither)
-    a, b, muzero = chebyshev_coeff(T, n, kind, endpt)
-    return custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
+    a, b, μ0 = chebyshev_coeff(T, n, kind, endpt)
+    return custom_gauss_rule(-one(T), one(T), a, b, μ0, endpt)
 end
 
 """
@@ -158,18 +158,18 @@ chebyshev(n, kind=1, endpt=neither) = chebyshev(Float64, n, kind,
 
 function chebyshev_coeff{T<:AbstractFloat}(::Type{T},
                         n::Integer, kind::Integer, endpt::EndPt)
-    muzero = convert(T, pi)
+    μ0 = convert(T, pi)
     half = convert(T, 0.5)
     a = zeros(T, n)
     b = fill(half, n)
     if kind == 1
         b[1] = sqrt(half)
     elseif kind == 2
-        muzero /= 2
+        μ0 /= 2
     else
         error("Unsupported value for kind")
     end
-    return a, b, muzero
+    return a, b, μ0
 end
 
 """
@@ -186,8 +186,8 @@ rules.
 function jacobi{T<:AbstractFloat}(n::Integer, alpha::T, beta::T, 
                                   endpt::EndPt=neither)
     @assert alpha > -1.0 && beta > -1.0
-    a, b, muzero = jacobi_coeff(n, alpha, beta, endpt)
-    custom_gauss_rule(-one(T), one(T), a, b, muzero, endpt)
+    a, b, μ0 = jacobi_coeff(n, alpha, beta, endpt)
+    custom_gauss_rule(-one(T), one(T), a, b, μ0, endpt)
 end
 
 function jacobi_coeff{T<:AbstractFloat}(n::Integer, alpha::T, 
@@ -195,7 +195,7 @@ function jacobi_coeff{T<:AbstractFloat}(n::Integer, alpha::T,
     ab = alpha + beta
     i = 2
     abi = ab + 2
-    muzero = 2^(ab+1) * exp(
+    μ0 = 2^(ab+1) * exp(
              lgamma(alpha+1) + lgamma(beta+1) - lgamma(abi) )
     a = zeros(T, n)
     b = zeros(T, n)
@@ -208,7 +208,7 @@ function jacobi_coeff{T<:AbstractFloat}(n::Integer, alpha::T,
         b[i] = sqrt( 4i*(alpha+i)*(beta+i)*(ab+i) /
                      ( (abi*abi-1)*abi*abi ) )
     end   
-    return a, b, muzero
+    return a, b, μ0
 end
 
 """
@@ -224,21 +224,21 @@ Use endpt=left for the left Radau rule.
 function laguerre{T<:AbstractFloat}(n::Integer, alpha::T, 
                                     endpt::EndPt=neither)
     @assert alpha > -1.0
-    a, b, muzero = laguerre_coeff(n, alpha, endpt)
-    custom_gauss_rule(zero(T), convert(T, Inf), a, b, muzero, endpt)
+    a, b, μ0 = laguerre_coeff(n, alpha, endpt)
+    custom_gauss_rule(zero(T), convert(T, Inf), a, b, μ0, endpt)
 end
 
 function laguerre_coeff{T<:AbstractFloat}(n::Integer, alpha::T, 
                                           endpt::EndPt)
     @assert endpt in [neither, left]
-    muzero = gamma(alpha+1)
+    μ0 = gamma(alpha+1)
     a = zeros(T, n)
     b = zeros(T, n)
     for i = 1:n
         a[i] = 2i - 1 + alpha
         b[i] = sqrt( i*(alpha+i) )
     end
-    return a, b, muzero
+    return a, b, μ0
 end
 
 """
@@ -250,9 +250,9 @@ for the interval -oo < x < oo with weight function
     w(x) = exp(-x^2).
 """
 function hermite{T<:AbstractFloat}(::Type{T}, n::Integer)
-    a, b, muzero = hermite_coeff(T, n)
+    a, b, μ0 = hermite_coeff(T, n)
     custom_gauss_rule(convert(T, -Inf), convert(T, Inf), a, b, 
-                      muzero, neither)
+                      μ0, neither)
 end
 
 """
@@ -263,18 +263,18 @@ Convenience function with type T = Float64.
 hermite(n) = hermite(Float64, n)
 
 function hermite_coeff{T}(::Type{T}, n::Integer)
-    muzero = sqrt(convert(T, pi))
+    μ0 = sqrt(convert(T, pi))
     a = zeros(T, n)
     b = zeros(T, n)
     for i = 1:n
         iT = convert(T, i)
         b[i] = sqrt(iT/2)
     end
-    return a, b, muzero
+    return a, b, μ0
 end
 
 function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T, 
-         a::Array{T,1}, b::Array{T,1}, muzero::T, endpt::EndPt,
+         a::Array{T,1}, b::Array{T,1}, μ0::T, endpt::EndPt,
          maxits::Integer=maxiterations[T])
     #
     # On entry:
@@ -286,13 +286,13 @@ function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T,
     #    b[j] p (x) = (x-a[j]) p   (x) - b[j-1] p   (x).
     #          j                j-1              j-2
     #      
-    # muzero holds the zeroth moment of the weight function, that is
+    # μ0 holds the zeroth moment of the weight function, that is
     #
-    #              / hi
-    #             |
-    #    muzero = | w(x) dx.
-    #             |
-    #             / lo
+    #          / hi
+    #         |
+    #    μ0 = | w(x) dx.
+    #         |
+    #         / lo
     #
     # On return:
     #
@@ -324,7 +324,7 @@ function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T,
     w = zero(a)
     steig!(a, b, w, maxits)
     for i = 1:n
-        w[i] = muzero * w[i]^2
+        w[i] = μ0 * w[i]^2
     end
     idx = sortperm(a)
     return a[idx], w[idx]
@@ -443,12 +443,12 @@ function steig!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1},
 end
 
 function orthonormal_poly{T<:AbstractFloat}(x::Array{T,1}, 
-                         a::Array{T,1}, b::Array{T,1}, muzero::T)
+                         a::Array{T,1}, b::Array{T,1}, μ0::T)
     # p[i,j] = value at x[i] of orthonormal polynomial of degree j-1.
     m = length(x)
     n = length(a)
     p = zeros(T, m, n+1)
-    c = one(T) / sqrt(muzero)
+    c = one(T) / sqrt(μ0)
     rb = one(T) / b[1]
     for i = 1:m
         p[i,1] = c
