@@ -262,7 +262,7 @@ Convenience function with type T = Float64.
 """
 hermite(n) = hermite(Float64, n)
 
-function hermite_coeff{T}(::Type{T}, n::Integer)
+function hermite_coeff{T<:AbstractFloat}(::Type{T}, n::Integer)
     μ0 = sqrt(convert(T, pi))
     a = zeros(T, n)
     b = zeros(T, n)
@@ -271,6 +271,11 @@ function hermite_coeff{T}(::Type{T}, n::Integer)
         b[i] = sqrt(iT/2)
     end
     return a, b, μ0
+end
+
+function logweight_coef{T<:AbstractFloat}(::Type{T}, n::Integer, 
+                                          r::Integer, endpt::EndPt)
+    a, b, ν0 = legendre_coeff(T, n, endpt)
 end
 
 function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T, 
@@ -328,6 +333,37 @@ function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T,
     end
     idx = sortperm(a)
     return a[idx], w[idx]
+end
+
+function modified_chebyshev{T<:AbstractFloat}(
+                  a::Vector{T}, b::Vector{T}, μ::Vector{T})
+    n = length(a)
+    @assert length(b) == n && length(μ) == 2n && n >= 1
+    σ = zeros(T, 2n, n)
+    for l = 1:2n
+        σ[l,1] = μ[l]
+    end
+    α = zeros(T, n)
+    β = zeros(T, n)
+    α[1] = a[1] + μ[2]/μ[1]
+    β[1] = μ[1]
+    if n >= 1
+        for l = 2:2n-3
+            σ[l,2] = ( σ[l+1,1] + ( a[l] - α[1] ) * σ[l,1]
+  	             + b[l] * σ[l-1,1] )
+        end
+        α[2] = a[2] + σ[3,2] / σ[2,2] - σ[2,1] / σ[1,1]
+        β[2] = σ[2,2] / σ[1,1]
+        for k = 3:n
+            for l = k:2n-k-1
+                σ[l,k] = ( σ[l+1,k-1] + ( a[l] - α[k-1] ) * σ[l,k-1]
+                         + b[l] * σ[l-1,k-1] - β[k-1] * σ[l,k-2] )
+            end
+	    α[k] = a[k] + σ[k+1,k] / σ[k,k] - σ[k,k-1] / σ[k-1,k-1]
+	    β[k] = σ[k,k] / σ[k-1,k-1]
+        end
+    end
+    return α, β
 end
 
 function solve{T<:AbstractFloat}(n::Integer, shift::T, 
