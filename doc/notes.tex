@@ -15,16 +15,20 @@
 \maketitle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Three-term recurrence relation}
-Given a finite positive measure~$\nu$ on the real line, we can define 
+Given a finite positive measure~$\nu$ on the real line, we define 
 an inner product and norm on the space of all (real) polynomials by
 \[
 \iprod{f,g}=\int f(x)g(x)\,d\nu(x)\quad\text{and}\quad
 \|f\|=\sqrt{\iprod{f,f}}.
 \]
-Use the Gram--Schmidt procedure to orthogonalise the linearly 
-independent monomials $1$, $x$, $x^2$, $x^3$, \dots, denoting the 
-resulting orthogonal polynomials by $p_0(x)$, $p_1(x)$, $p_2(x)$, 
-\dots so that
+Using the Gram--Schmidt procedure to orthogonalise the linearly 
+independent monomials $1$, $x$, $x^2$, $x^3$, \dots, defining the 
+monic polynomial~$p_j(x)$ of degree~$j$ by
+\[
+p_j(x)=x^j-\sum_{k=0}^{j-1}\frac{\iprod{x^j,p_k}}{\|p_k\|^2}\,p_k(x)
+	\quad\text{for $j=0$, $1$, $2$, \dots.}
+\]
+In this way,
 \begin{equation}\label{eq: orthog}
 \iprod{p_j,p_k}=0\quad\text{if $j\ne k$.}
 \end{equation}
@@ -33,40 +37,36 @@ resulting orthogonal polynomials by $p_0(x)$, $p_1(x)$, $p_2(x)$,
 The orthogonal polynomials defined above satisfy the three-term 
 recurrence relation
 \[
-p_j(x)=(x-a_j)p_{j-1}(x)-b_{j-1}^2p_{j-2}(x)
+p_j(x)=(x-a_j)p_{j-1}(x)-b_j^2p_{j-2}(x)
 	\quad\text{for $j=1$, $2$, $3$, \dots,}
 \]
-with $p_0(x)=1$ and $p_{-1}(x)=0$.  The coefficients satisfy
+with $p_0(x)=1$ and $p_{-1}(x)=0$. The coefficients satisfy
 \[
 a_j=\frac{\iprod{xp_{j-1},p_{j-1}}}{\|p_{j-1}\|^2}
 \quad\text{and}\quad
-b_j=\frac{\|p_j\|}{\|p_{j-1}\|},
+b_j=\frac{\|p_{j-1}\|}{\|p_{j-2}\|},
 \]
-except that, by convention, we put $b_0=\sqrt{\int d\nu}$.
+except that, by convention, we put $b_1=\sqrt{\int d\nu}$.
 \end{theorem}
 \begin{proof}
-By definition,
+Since $p_j(x)-xp_{j-1}(x)$ has degree at most~$j-1$, there are 
+constants~$c_{jk}$ such that
 \[
-p_j(x)=x^j-\sum_{k=0}^{j-1}\frac{\iprod{x^j,p_k}}{\|p_k\|^2}\,p_k(x),
-\]
-and, in particular, $p_j$ is monic.  Thus, $p_j(x)-xp_{j-1}(x)$ has
-degree at most~$j-1$, so there are constants $c_k$ such that
-\[
-p_j(x)-xp_{j-1}(x)=\sum_{k=0}^{j-1}c_kp_k(x).
+p_j(x)-xp_{j-1}(x)=\sum_{k=0}^{j-1}c_{jk}p_k(x).
 \]
 Taking the inner product of both sides with~$p_{j-1}$ and using
 the orthogonality property~\eqref{eq: orthog}, we obtain
 \[
--\iprod{xp_{j-1},p_{j-1}}=c_{j-1}\|p_{j-1}\|^2,
+-\iprod{xp_{j-1},p_{j-1}}=c_{j,j-1}\|p_{j-1}\|^2,
 \]
-showing that $c_{j-1}=-a_j$.  Also, taking the inner product of both
+showing that $c_{j,j-1}=-a_j$.  Also, taking the inner product of both
 sides with~$p_k$ for $k\le j-3$ gives
 \[
-c_k\|p_k\|^2=\iprod{p_j-xp_{j-1},p_k}=-\iprod{p_{j-1},xp_k}=0,
+c_{jk}\|p_k\|^2=\iprod{p_j-xp_{j-1},p_k}=-\iprod{p_{j-1},xp_k}=0,
 \]
-so $p_j(x)=(x-a_j)p_{j-1}(x)+c_{j-2}p_{j-2}(x)$ and
+so $p_j(x)=(x-a_j)p_{j-1}(x)+c_{j,j-2}p_{j-2}(x)$ and
 \[
-0=\iprod{p_j,p_{j-2}}=\iprod{xp_{j-1},p_{j-2}}+c_{j-2}\|p_{j-2}\|^2.
+0=\iprod{p_j,p_{j-2}}=\iprod{xp_{j-1},p_{j-2}}+c_{j,j-2}\|p_{j-2}\|^2.
 \]
 Finally, 
 \begin{align*}
@@ -74,29 +74,29 @@ Finally,
 	=\iprod{p_{j-1},p_{j-1}}+\iprod{p_{j-1},xp_{j-2}-p_{j-1}}\\
 	&=\|p_{j-1}\|^2+0,
 \end{align*}
-and therefore $c_{j-2}=-\|p_{j-1}\|^2/\|p_{j-2}\|^2=-b_{j-1}^2$.
+and therefore $c_{j,j-2}=-\|p_{j-1}\|^2/\|p_{j-2}\|^2=-b_j^2$.
 \end{proof}
 
-We denote the orthonormal polynomials by
+We denote the ortho\emph{normal} polynomials by
 \[
 \hat p_j(x)=\frac{p_j(x)}{\|p_j\|},
 \]
 and find that
 \[
-b_j\hat p_j(x)=(x-a_j)\hat p_{j-1}(x)-b_{j-1}\hat p_{j-2}(x),
+b_{j+1}\hat p_j(x)=(x-a_j)\hat p_{j-1}(x)-b_j\hat p_{j-2}(x),
 \]
 or equivalently,
 \begin{equation}\label{eq: 3 term orthog}
-b_{j-1}\hat p_{j-2}(x)+a_j\hat p_{j-1}(x)+b_j\hat p_j(x)=xp_j(x).
+b_j\hat p_{j-2}(x)+a_j\hat p_{j-1}(x)+b_{j+1}\hat p_j(x)=xp_j(x).
 \end{equation}
 Defining
 \[
 T_n=\begin{bmatrix}
-a_1&b_1   &       &       &\\
-b_1&a_2   &b_2    &       &\\
+a_1&b_2   &       &       &\\
+b_2&a_2   &b_3    &       &\\
    &\ddots&\ddots &\ddots &\\
-   &      &b_{n-2}&a_{n-1}&b_{n-1}\\
-   &      &       &b_{n-1}&a_n
+   &      &b_{n-1}&a_{n-1}&b_n\\
+   &      &       &b_n    &a_n
 \end{bmatrix}
 \quad\text{and}\quad
 \hatvecp_n(x)=\begin{bmatrix}p_0(x)\\ p_1(x)\\ \vdots\\ p_{n-1}(x)
@@ -105,7 +105,7 @@ b_1&a_2   &b_2    &       &\\
 the equations~\eqref{eq: 3 term orthog} for $0\le j\le n-1$ are 
 equivalent to
 \[
-T_n\hatvecp_n(x)+b_n\hat p_n(x)\boldsymbol{e}_n=x\hatvecp_n(x).
+T_n\hatvecp_n(x)+b_{n+1}\hat p_n(x)\boldsymbol{e}_n=x\hatvecp_n(x).
 \]
 
 \subsection{Legendre polynomials}
@@ -130,24 +130,24 @@ k\biggl(\frac{2}{2k+1}\biggr)^{1/2}\hat P_k(x)
 \end{multline*}
 or equivalently,
 \[
-\frac{k\hat P_k(x)}{\sqrt{2k+1}}=\sqrt{2k-1}x\hat P_{k-1}(x)
+\frac{k\hat P_k(x)}{\sqrt{2k+1}}=\sqrt{2k-1}\,x\hat P_{k-1}(x)
 	-\frac{k-1}{\sqrt{2k-3}}\,\hat P_{k-2}(x).
 \]
 Thus, the Legendre polynomials satisfy
 \[
-b_k\hat P_k(x)=(x-a_k)\hat P_{k-1}(x)-b_{k-1}\hat P_{k-2}(x)
+b_{k+1}\hat P_k(x)=(x-a_k)\hat P_{k-1}(x)-b_k\hat P_{k-2}(x)
 \]
 where
 \[
-a_k=0\quad\text{and}\quad b_k=\frac{k}{\sqrt{4k^2-1}},
+a_k=0\quad\text{and}\quad b_k=\frac{k-1}{\sqrt{(2k-1)(2k-3)}},
 \]
-except that $b_0=\sqrt{\int_{-1}^1\,dx}=\sqrt{2}$.
+except that $b_1=\sqrt{\int_{-1}^1\,dx}=\sqrt{2}$.
 
 
 
 \section{The modified Chebyshev algorithm}
 Following Gautschi~\cite{Gautschi1982} we consider the sequence of 
-(monic) orthogonal polynomials $q_0$, $q_1$, $q_2$ generated by a 
+monic orthogonal polynomials $q_0$, $q_1$, $q_2$ generated by a 
 positive measure $\mu$ on the real line.  Thus, $q_k$ is a monic 
 polynomial of degree~$k$ and
 \[
@@ -155,7 +155,7 @@ polynomial of degree~$k$ and
 \]
 We write the three-term recurrence relation as
 \begin{equation}\label{eq: 3 term q}
-q_k(x)=(x-\alpha_k)q_{k-1}(x)-\beta_{k-1}^2 q_{k-2}(x)
+q_k(x)=(x-\alpha_k)q_{k-1}(x)-\beta_k^2 q_{k-2}(x)
 	\quad\text{for $k=1$, $2$, $3$, \dots,}
 \end{equation}
 with
@@ -166,8 +166,9 @@ We adopt the usual convention that $\beta_0=\sqrt{\int d\mu}$.
 
 Our aim is to use the modified Chebyshev algorithm to determine the 
 coefficients $\alpha_k$~and $\beta_k$ for $1\le k\le n$.
-This algorithm uses a second family of orthogonal polynomials, say
-$p_0$, $p_1$, $p_2$, \dots, having known coefficients $a_k$~and $b_k$ 
+This algorithm uses a second family of monic orthogonal 
+polynomials, say $p_0$, $p_1$, $p_2$, \dots, having known coefficients 
+$a_k$~and $b_k$ 
 in the associated three-term recurrence relation
 \[
 p_k(x)=(x-a_k)p_{k-1}(x)-b_k^2p_{k-2}(x)
@@ -182,119 +183,119 @@ positive measure, so that
 \begin{figure}
 \caption{The dots correspond to the $\sigma_{lk}$ computed in the 
 case~$n=5$.  The parallelogram indicates the $\sigma_{lk}$ used in 
-the expressions for $\alpha_4$~and $\beta_4$.}
+the expressions for $\alpha_5$~and $\beta_5$.}
 \begin{center}
 \begin{tikzpicture}[scale=1.0]
-\draw[->] (0, -1) -- (0, 5);
-\node[above left] at (0, 5) {$k$};
-\draw[->] (-1, 0) -- (10, 0);
-\node[right] at (10, 0) {$l$};
-\foreach \x in {1, 2, ..., 8}
-    \draw[fill=blue] (\x, -1) circle(0.10cm);
-\foreach \x in {0, 1, ..., 9}
+\draw[->] (0, -1) -- (0, 6);
+\node[above left] at (0, 6) {$k$};
+\draw[->] (-1, 0) -- (11, 0);
+\node[right] at (11, 0) {$l$};
+\foreach \x in {2, 3, ..., 9}
     \draw[fill=blue] (\x, 0) circle(0.10cm);
-\foreach \x in {1, 2, ..., 8}
-    \draw[fill=red] (\x, 1) circle(0.10cm);
-\foreach \x in {2, 3, ..., 7}
+\foreach \x in {1, 2, ..., 10}
+    \draw[fill=blue] (\x, 1) circle(0.10cm);
+\foreach \x in {2, 3, ..., 9}
     \draw[fill=red] (\x, 2) circle(0.10cm);
-\foreach \x in {3, 4, 5, 6}
+\foreach \x in {3, 4, ..., 8}
     \draw[fill=red] (\x, 3) circle(0.10cm);
-\foreach \x in {4, 5}
+\foreach \x in {4, 5, 6, 7}
     \draw[fill=red] (\x, 4) circle(0.10cm);
-\foreach \y in {1, 2, 3, 4}
+\foreach \x in {5, 6}
+    \draw[fill=red] (\x, 5) circle(0.10cm);
+\foreach \y in {1, 2, 3, 4, 5}
     {
     \draw[thin] (-0.075, \y) -- (0, \y);
     \node[left] at (0.0, \y) {$\y$};
     }
-\foreach \x in {1, 2, 3, ..., 9}
+\foreach \x in {1, 2, 3, ..., 9, 10}
     \node[below] at (\x, -0.04) {$\x$};
-\draw[-] (9, 4) -- (9, 6);
-\draw[-] (8, 5) -- (10, 5);
-\draw[fill=blue] (8, 5) circle(0.10cm);
-\draw[fill=blue] (9, 5) circle(0.10cm);
+\draw[-] (10, 5) -- (10, 7);
+\draw[-] (9, 6) -- (11, 6);
+\draw[fill=blue] (9, 6) circle(0.10cm);
+\draw[fill=blue] (10, 6) circle(0.10cm);
+\draw[fill=blue] (11, 6) circle(0.10cm);
 \draw[fill=blue] (10, 5) circle(0.10cm);
-\draw[fill=blue] (9, 4) circle(0.10cm);
-\draw[fill=red]  (9, 6) circle(0.10cm);
+\draw[fill=red]  (10, 7) circle(0.10cm);
 \node at (9, 6.5) {stencil};
-\draw[-] (2.0, 2.5) -- (4.0, 4.5) -- (6.0, 4.5) 
-      -- (4.0, 2.5) -- (2.0, 2.5);
+\draw[-] (3.0, 3.5) -- (5.0, 5.5) -- (7.0, 5.5) 
+      -- (5.0, 3.5) -- (3.0, 3.5);
 \end{tikzpicture}
 \end{center}
 \end{figure}
 
 The algorithm requires that we know the values of the integrals
 \[
-\mu_k=\int p_k(x)\,d\mu(x)\quad\text{for $0\le k\le 2n-1$,}
+\mu_k=\int p_{k-1}(x)\,d\mu(x)\quad\text{for $1\le k\le 2n$,}
 \]
 and is summarised in the following theorem.
 
 \begin{theorem}
-The coefficients $\alpha_k$~and $\beta_k$ in the three-term 
-recurrence relation~\eqref{eq: 3 term q} can be computed 
-for $1\le k\le n$ by putting
+The coefficients $\alpha_1$, $\alpha_2$, \dots, $\alpha_n$~and 
+$\beta_0$, $\beta_1$, \dots, $\beta_{n-1}$ in the three-term 
+recurrence relation~\eqref{eq: 3 term q} can be computed by putting
 \[
 \begin{aligned}
-\sigma_{l,-1}&=0&\text{for $1\le l\le 2n-2$},\\
-\sigma_{l,0}&=\mu_l&\text{for $0\le l\le2n-1$},\\
-\alpha_1&=a_1+\frac{\mu_1}{\mu_0},\\
-\beta_0&=\sqrt{\mu_0},
+\sigma_{l,0}&=0&\text{for $2\le l\le 2n-1$},\\
+\sigma_{l,1}&=\mu_l&\text{for $1\le l\le2n$},\\
+\alpha_1&=a_1+\frac{\mu_2}{\mu_1},\\
+\beta_1&=\sqrt{\mu_1},
 \end{aligned} 
 \]
 and, for $k=1$, $2$, \dots, $n-1$ and $k\le l\le2n-k-1$, 
 \[
 \begin{aligned}
-\sigma_{lk}&=\sigma_{l+1,k-1}+(a_l-\alpha_k)\sigma_{l,k-1}
-		+b_l^2\sigma_{l-1,k-1}-\beta_k^2\sigma_{l,k-2},\\
-\alpha_{k+1}&=a_{k+1}+\frac{\sigma_{k+1,k}}{\sigma_{kk}}
-	-\frac{\sigma_{k,k-1}}{\sigma_{k-1,k-1}},\\
-\beta_{k+1}&=\sqrt{\frac{\sigma_{kk}}{\sigma_{k-1,k-1}}}.
+\sigma_{l+1,k+1}&=\sigma_{l+2,k}+(a_l-\alpha_k)\sigma_{l+1,k}
+		+b_l^2\sigma_{lk}-\beta_k^2\sigma_{l+1,k-1},\\
+\alpha_{k+1}&=a_{k+1}+\frac{\sigma_{k+2,k+1}}{\sigma_{k+1,k+1}}
+	-\frac{\sigma_{k+1,k}}{\sigma_{kk}},\\
+\beta_{k+1}&=\sqrt{\frac{\sigma_{k+1,k+1}}{\sigma_{kk}}}.
 \end{aligned}
 \]
 \end{theorem}
 \begin{proof}
 It is easily verified that the integrals
 \[
-\sigma_{lk}=\int p_l(x)q_k(x)\,d\mu(x)
+\sigma_{lk}=\int p_{l-1}(x)q_{k-1}(x)\,d\mu(x)
 \]
-satisfy the initial conditions $\sigma_{l,-1}=0$~and 
-$\sigma_{l,0}=\mu_l$.  In addition, $\sigma_{lk}=0$ if $k>l$. 
+satisfy the initial conditions $\sigma_{l,0}=0$~and 
+$\sigma_{l,1}=\mu_l$.  In addition, $\sigma_{lk}=0$ if $k>l$. 
 For $1\le k\le l$,
 \begin{align*}
-\sigma_{lk}&=\int p_l(x)\bigl[
+\sigma_{l+1,k+1}&=\int p_l(x)\bigl[
 (x-\alpha_k)q_{k-1}(x)-\beta_k^2q_{k-2}(x)\bigr]\,d\mu(x)\\
 	&=\int(x-a_l+a_l-\alpha_k)p_l(x)q_{k-1}(x)\,d\mu(x)
 		-\beta_k^2\sigma_{l,k-2}\\
 	&=\int\bigl[(x-a_l)p_l(x)-b_l^2p_{l-1}(x)\bigr]
 		q_{k-1}(x)\,d\mu(x)\\
-	&\qquad{}+(a_l-\alpha_k)\sigma_{l,k-1}
-		+b_l^2\sigma_{l-1,k-1}-\beta_k^2\sigma_{l,k-2}
+	&\qquad{}+(a_l-\alpha_k)\sigma_{l+1,k}
+		+b_l^2\sigma_{lk}-\beta_k^2\sigma_{l+1,k-1}
 \end{align*}
 so
 \[
-\sigma_{lk}=\sigma_{l+1,k-1}+(a_l-\alpha_k)\sigma_{l,k-1}
-		+b_l^2\sigma_{l-1,k-1}-\beta_k^2\sigma_{l,k-2}.
+\sigma_{l+1,k+1}=\sigma_{l+2,k}+(a_l-\alpha_k)\sigma_{l+1,k}
+		+b_l^2\sigma_{lk}-\beta_k^2\sigma_{l+1,k-1}.
 \]
 
-Recall from Theorem~\ref{thm: 3 term} that
+By Theorem~\ref{thm: 3 term},
 \[
-\alpha_{k+1}=\int xq_k(x)^2\,\mu(x)\bigg/\int q_k(x)^2\,d\mu(x)
+\alpha_{k+1}=\int xq_k(x)^2\,d\mu(x)\bigg/\int q_k(x)^2\,d\mu(x)
 \]
 and
 \[
-\beta_{k+1}^2=\int q_k(x)^2\,\mu(x)\bigg/\int q_{k-1}(x)^2\,d\mu(x).
+\beta_{k+1}^2=\int q_k(x)^2\,d\mu(x)\bigg/\int q_{k-1}(x)^2\,d\mu(x).
 \]
 Since $q_k(x)-p_k(x)$ has degree at most~$k-1$, the orthogonality 
 property of the $q_k$ implies that
 \begin{align*}
 \int q_k(x)^2\,d\mu(x)&=\int p_k(x)q_k(x)\,d\mu(x)
 	+\int\bigl[q_k(x)-p_k(x)\bigr]q_k(x)\,d\mu(x)\\
-	&=\sigma_{kk}+0,
+	&=\sigma_{k+1,k+1}+0,
 \end{align*}
 so
 \[
-\beta_{k+1}^2=\frac{\sigma_{kk}}{\sigma_{k-1,k-1}}
+\beta_{k+1}^2=\frac{\sigma_{k+1,k+1}}{\sigma_{kk}}
 	\quad\text{for $k\ge1$,}
-	\qquad\text{with $\beta_1=\mu_0$.}
+	\qquad\text{with $\beta_1^2=\mu_1$.}
 \]
 Similarly,
 \[
@@ -305,14 +306,14 @@ Similarly,
 with
 \begin{align*}
 \int x&\bigl[q_k(x)-p_k(x)\bigr]q_k(x)\,d\mu(x)
-	=\int\bigl[q_k(x)-p_k(x)\bigr](x-\alpha_k)q_k(x)\,d\mu(x)\\
-	&\qquad\qquad\qquad\qquad\qquad\qquad{}+\alpha_k\int 
+	=\int\bigl[q_k(x)-p_k(x)\bigr](x-\alpha_{k+1})q_k(x)\,d\mu(x)\\
+	&\qquad\qquad\qquad\qquad\qquad\qquad{}+\alpha_{k+1}\int 
 		\bigl[q_k(x)-p_k(x)\bigr]q_k(x)\,d\mu(x)\\
 	&=\int\bigl[q_k(x)-p_k(x)\bigr]
-	\bigl[q_{k+1}(x)+\beta_k^2 q_{k-1}(x)\bigr] 
+	\bigl[q_{k+1}(x)+\beta_{k+1}^2 q_{k-1}(x)\bigr] 
 		\,d\mu(x)+\alpha_k\times0\\
-	&=-\beta_{k+1}^2\sigma_{k,k-1}
-	=-\frac{\sigma_{kk}}{\sigma_{k-1,k-1}}\,\sigma_{k,k-1}
+	&=-\beta_{k+1}^2\sigma_{k+1,k}
+	=-\frac{\sigma_{k+1,k+1}}{\sigma_{kk}}\,\sigma_{k+1,k}
 \end{align*}
 and
 \begin{align*}
@@ -322,19 +323,19 @@ and
 		a_{k+1}p_k(x)+b_{k+1}^2p_{k-1}(x)\bigr]q_k(x)\,d\mu(x)\\
 	&=\int p_{k+1}(x)q_k(x)\,d\mu(x)
 		+a_{k+1}\int p_k(x)q_k(x)\,d\mu(x)\\
-	&=\sigma_{k+1,k}+a_{k+1}\sigma_{kk};
+	&=\sigma_{k+2,k+1}+a_{k+1}\sigma_{k+1,k+1};
 \end{align*}
 thus,
 \[
-\alpha_{k+1}=a_{k+1}+\frac{\sigma_{k+1,k}}{\sigma_{kk}}
-	-\frac{\sigma_{k,k-1}}{\sigma_{k-1,k-1}}
+\alpha_{k+1}=a_{k+1}+\frac{\sigma_{k+2,k+1}}{\sigma_{k+1,k+1}}
+	-\frac{\sigma_{k+1,k}}{\sigma_{kk}}
 	\quad\text{for $k\ge1$,}
 \]
 with
 \[
-\alpha_1=\frac{\sigma_{10}+a_0\sigma_{00}-\beta_0\sigma_{0,-1}}%
-{\sigma_{00}}=a_1+\frac{\sigma_{10}}{\sigma_{00}}
-	=a_1+\frac{\mu_1}{\mu_0}.
+\alpha_1=\frac{\sigma_{21}+a_1\sigma_{11}-\beta_0\sigma_{1,0}}%
+{\sigma_{11}}=a_1+\frac{\sigma_{21}}{\sigma_{11}}
+	=a_1+\frac{\mu_2}{\mu_1}.
 \]
 \end{proof}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -470,12 +471,12 @@ so
 \frac{C_{k-2}}{C_k}=\frac{C_{k-2}}{C_{k-1}}\,\frac{C_{k-1}}{C_k}
 	=\frac{k-1}{2(2k-3)}\,\frac{k}{2(2k-1)}.
 \]
-Hence, $p_k(x)=(x-a_k)p_{k-1}(x)-b_k^2p_{k-2}(x)$ where
+Hence, $p_k(x)=(x-a_k)p_{k-1}(x)-b_{k-1}^2p_{k-2}(x)$ where
 \[
-a_n=\frac{1}{2}\quad\text{and}\quad
-b_k^2=\frac{(k-1)^2}{2^2(2k-3)(2k-1)},
+a_k=\frac{1}{2}\quad\text{and}\quad
+b_k^2=\frac{k^2}{2^2(2k-1)(2k+1)},
 \]
-except $b_1=\sqrt{\int_0^1\,dx}=1$.
+except $b_0=\sqrt{\int_0^1\,dx}=1$.
 
 
 
