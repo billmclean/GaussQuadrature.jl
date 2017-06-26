@@ -108,8 +108,10 @@ rules.
 """
 function legendre{T<:AbstractFloat}(::Type{T}, 
                  n::Integer, endpt::EndPt=neither)
-    a, b, μ0 = legendre_coeff(T, n, endpt)
-    return custom_gauss_rule(-one(T), one(T), a, b, μ0, endpt)
+    a, b = legendre_coeff(T, n)
+    return custom_gauss_rule(-one(T), one(T), a, b, endpt)
+#    a, b, μ0 = legendre_coeff(T, n, endpt)
+#    return custom_gauss_rule(-one(T), one(T), a, b, μ0, endpt)
 end
 
 """
@@ -119,8 +121,19 @@ Convenience function with type T = Float64.
 """
 legendre(n, endpt=neither) = legendre(Float64, n, endpt)
 
+function legendre_coeff{T<:AbstractFloat}(::Type{T}, n::Integer)
+    a = zeros(T, n)
+    b = zeros(T, n)
+    b[1] = sqrt(convert(T, 2))
+    for k = 2:n
+        b[k] = (k-1) / sqrt(convert(T, (2k-1)*(2k-3)))
+    end
+    return a, b
+end
+
 function legendre_coeff{T<:AbstractFloat}(::Type{T},
                        n::Integer, endpt::EndPt)
+    warn("This method will be removed in GaussQuadrature 0.4")
     μ0 = convert(T, 2.0)
     a = zeros(T, n)
     b = zeros(T, n)
@@ -279,6 +292,63 @@ function logweight_coef{T<:AbstractFloat}(::Type{T}, n::Integer,
 end
 
 function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T, 
+         a::Array{T,1}, b::Array{T,1}, endpt::EndPt,
+         maxits::Integer=maxiterations[T])
+    #
+    # On entry:
+    #
+    # a, b hold the coefficients (as given, for instance, by
+    # legendre_coeff) in the three-term recurrence relation
+    # for the orthonormal polynomials ̂p₀, ̂p₁, ̂p₂, ... , that is,
+    #
+    #    b[k+1] ̂p (x) = (x-a[k]) ̂p   (x) - b[k] ̂p   (x).
+    #            k                k-1            k-2
+    #      
+    # where, by convention
+    #
+    #              / hi
+    #             |
+    #    b[1]^2 = | w(x) dx.
+    #             |
+    #             / lo
+    #
+    # On return:
+    #
+    # x, w hold the points and weights.
+    #
+    n = length(a)
+    @assert length(b) == n
+    if endpt == left 
+        if n == 1
+            a[1] = lo
+        else
+            a[n] = solve(n, lo, a, b) * b[n]^2 + lo
+        end
+    elseif endpt == right
+        if n == 1
+            a[1] = hi
+        else
+            a[n] = solve(n, hi, a, b) * b[n]^2 + hi
+        end
+    elseif endpt == both
+        if n == 1 
+            error("Must have at least two points for both ends.")
+        end 
+        g = solve(n, lo, a, b)
+        t1 = ( hi - lo ) / ( g - solve(n, hi, a, b) )
+        b[n] = sqrt(t1)
+        a[n] = lo + g * t1
+    end
+    w = zero(a)
+    special_eigenproblem!(a, b, w, maxits)
+    for i = 1:n
+        w[i] = (b[1] * w[i])^2
+    end
+    idx = sortperm(a)
+    return a[idx], w[idx]
+end
+
+function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T, 
          a::Array{T,1}, b::Array{T,1}, μ0::T, endpt::EndPt,
          maxits::Integer=maxiterations[T])
     #
@@ -303,6 +373,7 @@ function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T,
     #
     # x, w hold the points and weights.
     #
+    warn("This method will be removed in GaussQuadrature 0.4")
     n = length(a)
     @assert length(b) == n
     if endpt == left 
@@ -383,6 +454,99 @@ function solve{T<:AbstractFloat}(n::Integer, shift::T,
         t = a[i] - shift - b[i-1]^2 / t
     end
     return one(t) / t
+end
+
+function special_eigenproblem!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1}, 
+                               z::Array{T,1}, maxits::Integer)
+    #
+    # Finds the eigenvalues and first components of the normalised
+    # eigenvectors of a symmetric tridiagonal matrix by the implicit
+    # QL method.
+    #
+    # d[i]   On entry, holds the ith diagonal entry of the matrix. 
+    #        On exit, holds the ith eigenvalue.
+    #
+    # e[i]   On entry, holds the [i,i-1] entry of the matrix for
+    #        i = 2, 3, ..., n.  (The value of e[1] is not used.)
+    #        On exit, e is overwritten.
+    #
+    # z[i]   On exit, holds the first component of the ith normalised
+    #        eigenvector associated with d[i].
+    #
+    # maxits The maximum number of QL iterations.
+    #
+    # Martin and Wilkinson, Numer. Math. 12: 377-383 (1968).
+    # Dubrulle, Numer. Math. 15: 450 (1970).
+    # Handbook for Automatic Computation, Vol ii, Linear Algebra, 
+    #        pp. 241-248, 1971.
+    #
+    # This is a modified version of the Eispack routine imtql2.
+    #
+    n = length(z)
+    z[1] = 1
+    z[2:n] = 0
+    e[1] = 0
+
+    if n == 1 # Nothing to do for a 1x1 matrix.
+        return
+    end
+    for l = 1:n
+        for j = 1:maxits
+            # Look for small off-diagonal elements.
+            m = n
+            for i = l:n-1
+                if abs(e[i+1]) <= eps(T) * ( abs(d[i]) + abs(d[i+1]) )
+                    m = i
+                    break   
+                end
+            end
+            p = d[l]
+            if m == l
+                continue
+            end
+            if j == maxits
+                msg = @sprintf("No convergence after %d iterations", j)
+                msg *= " (try increasing maxits)"
+                error(msg)
+            end
+            # Form shift
+            g = ( d[l+1] - p ) / ( 2 * e[l+1] )
+            r = hypot(g, one(T))
+            g = d[m] - p + e[l+1] / ( g + copysign(r, g) )
+            s = one(T)
+            c = one(T)
+            p = zero(T)
+            for i = m-1:-1:l
+                f = s * e[i+1]
+                b = c * e[i+1]
+                if abs(f) <  abs(g)
+                    s = f / g
+                    r = hypot(s, one(T))
+                    e[i+2] = g * r
+                    c = one(T) / r
+                    s *= c
+                else
+                    c = g / f
+                    r = hypot(c, one(T))
+                    e[i+2] = f * r
+                    s = one(T) / r
+                    c *= s
+                end 
+                g = d[i+1] - p
+                r = ( d[i] - g ) * s + 2 * c * b
+                p = s * r
+                d[i+1] = g + p
+                g = c * r - b
+                # Form first component of vector.
+                f = z[i+1]
+                z[i+1] = s * z[i] + c * f
+                z[i]   = c * z[i] - s * f
+            end # loop over i
+            d[l] -= p
+            e[l] = g
+            e[m] = zero(T)
+        end # loop over j
+    end # loop over l
 end
 
 function steig!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1}, 
