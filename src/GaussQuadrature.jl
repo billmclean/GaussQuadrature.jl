@@ -37,12 +37,12 @@ module GaussQuadrature
 # Legendre                 -1 < x < 1          1      
 # Chebyshev (first kind)   -1 < x < 1     1 / sqrt(1-x^2)        
 # Chebyshev (second kind)  -1 < x < 1       sqrt(1-x^2)          
-# Jacobi                   -1 < x < 1   (1-x)^alpha (1+x)^beta  
-# Laguerre                 0 < x < oo     x^alpha exp(-x)
+# Jacobi                   -1 < x < 1     (1-x)^α (1+x)^β  
+# Laguerre                 0 < x < oo     x^α exp(-x)
 # Hermite                 -oo < x < oo      exp(-x^2)
 #
-# For the Jacobi and Laguerre rules we require alpha > -1 and
-# beta > -1, so that the weight function is integrable.
+# For the Jacobi and Laguerre rules we require α > -1 and
+# β > -1, so that the weight function is integrable. 
 #
 # Use the endpt argument to include one or both of the end points
 # of the interval of integration as an abscissa in the quadrature 
@@ -71,13 +71,13 @@ module GaussQuadrature
 #       Hall, Englewood Cliffs, N.J., 1966.
 
 export neither, left, right, both
-export legendre, legendre_coeff
-export chebyshev, chebyshev_coeff
-export jacobi, jacobi_coeff
-export laguerre, laguerre_coeff 
-export hermite, hermite_coeff
+export legendre, legendre_coefs
+export chebyshev, chebyshev_coefs
+export jacobi, jacobi_coefs
+export laguerre, laguerre_coefs
+export hermite, hermite_coefs
 export custom_gauss_rule, orthonormal_poly
-export steig!
+export special_eigenproblem! 
 
 """
 Enumeration type used to specify which endpoints of the integration
@@ -92,6 +92,8 @@ const neither = EndPt('N')
 const left    = EndPt('L')
 const right   = EndPt('R')
 const both    = EndPt('B')
+
+include("to_be_removed.jl")
 
 # Maximum number of QL iterations used by steig!.
 # You might need to increase this.
@@ -108,10 +110,8 @@ rules.
 """
 function legendre{T<:AbstractFloat}(::Type{T}, 
                  n::Integer, endpt::EndPt=neither)
-    a, b = legendre_coeff(T, n)
+    a, b = legendre_coefs(T, n)
     return custom_gauss_rule(-one(T), one(T), a, b, endpt)
-#    a, b, μ0 = legendre_coeff(T, n, endpt)
-#    return custom_gauss_rule(-one(T), one(T), a, b, μ0, endpt)
 end
 
 """
@@ -121,26 +121,14 @@ Convenience function with type T = Float64.
 """
 legendre(n, endpt=neither) = legendre(Float64, n, endpt)
 
-function legendre_coeff{T<:AbstractFloat}(::Type{T}, n::Integer)
+function legendre_coefs{T<:AbstractFloat}(::Type{T}, n::Integer)
     a = zeros(T, n)
-    b = zeros(T, n)
+    b = zeros(T, n+1)
     b[1] = sqrt(convert(T, 2))
     for k = 2:n
         b[k] = (k-1) / sqrt(convert(T, (2k-1)*(2k-3)))
     end
     return a, b
-end
-
-function legendre_coeff{T<:AbstractFloat}(::Type{T},
-                       n::Integer, endpt::EndPt)
-    warn("This method will be removed in GaussQuadrature 0.4")
-    μ0 = convert(T, 2.0)
-    a = zeros(T, n)
-    b = zeros(T, n)
-    for i = 1:n
-        b[i] = i / sqrt(convert(T, 4*i^2-1))
-    end
-    return a, b, μ0
 end
 
 """
@@ -157,8 +145,8 @@ rules.
 """
 function chebyshev{T<:AbstractFloat}(::Type{T},
                   n::Integer, kind::Integer=1, endpt::EndPt=neither)
-    a, b, μ0 = chebyshev_coeff(T, n, kind, endpt)
-    return custom_gauss_rule(-one(T), one(T), a, b, μ0, endpt)
+    a, b = chebyshev_coefs(T, n, kind)
+    return custom_gauss_rule(-one(T), one(T), a, b, endpt)
 end
 
 """
@@ -168,90 +156,88 @@ Convenience function with type T = Float64.
 """
 chebyshev(n, kind=1, endpt=neither) = chebyshev(Float64, n, kind, 
                                                 endpt)
-
-function chebyshev_coeff{T<:AbstractFloat}(::Type{T},
-                        n::Integer, kind::Integer, endpt::EndPt)
-    μ0 = convert(T, pi)
-    half = convert(T, 0.5)
+function chebyshev_coefs{T<:AbstractFloat}(::Type{T},
+                        n::Integer, kind::Integer)
+    half = convert(T, 1//2)
     a = zeros(T, n)
-    b = fill(half, n)
-    if kind == 1
-        b[1] = sqrt(half)
+    b = fill(half, n+1)
+    if kind == 1 
+        b[1] = sqrt(convert(T, pi))
+	if n >= 2
+            b[2] = sqrt(half)
+        end
     elseif kind == 2
-        μ0 /= 2
+        b[1] = sqrt(half * convert(T, pi))
     else
         error("Unsupported value for kind")
     end
-    return a, b, μ0
+    return a, b
 end
 
 """
-x, w = jacobi(n, alpha, beta, endpt=neither)
+x, w = jacobi(n, α, β, endpt=neither)
 
 Returns points x and weights w for the n-point Gauss-Jacobi rule
 for the interval -1 < x < 1 with weight function
 
-    w(x) = (1-x)^alpha (1+x)^beta.
+    w(x) = (1-x)^α (1+x)^β.
 
 Use endpt=left, right, both for the left Radau, right Radau, Lobatto 
 rules.
 """
-function jacobi{T<:AbstractFloat}(n::Integer, alpha::T, beta::T, 
+function jacobi{T<:AbstractFloat}(n::Integer, α::T, β::T, 
                                   endpt::EndPt=neither)
-    @assert alpha > -1.0 && beta > -1.0
-    a, b, μ0 = jacobi_coeff(n, alpha, beta, endpt)
-    custom_gauss_rule(-one(T), one(T), a, b, μ0, endpt)
+    @assert α > -1.0 && β > -1.0
+    a, b = jacobi_coefs(n, α, β)
+    custom_gauss_rule(-one(T), one(T), a, b, endpt)
 end
 
-function jacobi_coeff{T<:AbstractFloat}(n::Integer, alpha::T, 
-                                        beta::T, endpt::EndPt)
-    ab = alpha + beta
-    i = 2
-    abi = ab + 2
-    μ0 = 2^(ab+1) * exp(
-             lgamma(alpha+1) + lgamma(beta+1) - lgamma(abi) )
+function jacobi_coefs{T<:AbstractFloat}(n::Integer, α::T, β::T)
     a = zeros(T, n)
-    b = zeros(T, n)
-    a[1] = ( beta - alpha ) / abi
-    b[1] = sqrt( 4*(alpha+1)*(beta+1) / ( (ab+3)*abi*abi ) )
-    a2b2 = beta*beta - alpha*alpha
+    b = zeros(T, n+1)
+    ab = α + β
+    abi = ab + 2
+    b[1] = 2^((ab+1)/2) * exp(
+             ( lgamma(α+1) + lgamma(β+1) - lgamma(abi) )/2 )
+    a[1] = ( β - α ) / abi
+    b[2] = sqrt( 4*(α+1)*(β+1) / ( (ab+3)*abi*abi ) )
+    a2b2 = β*β - α*α
     for i = 2:n
         abi = ab + 2i
-        a[i] = a2b2 / ( (abi-2)*abi )
-        b[i] = sqrt( 4i*(alpha+i)*(beta+i)*(ab+i) /
+        a[i]   = a2b2 / ( (abi-2)*abi )
+        b[i+1] = sqrt( 4i*(α+i)*(β+i)*(ab+i) /
                      ( (abi*abi-1)*abi*abi ) )
     end   
-    return a, b, μ0
+    return a, b
 end
 
 """
-x, w = laguerre(n, alpha, endpt=neither)
+x, w = laguerre(n, α, endpt=neither)
 
 Returns points x and weights w for the n-point Gauss-Laguerre rule
 for the interval 0 < x < oo with weight function
 
-    w(x) = x^alpha exp(-x)
+    w(x) = x^α exp(-x)
 
 Use endpt=left for the left Radau rule.
 """
-function laguerre{T<:AbstractFloat}(n::Integer, alpha::T, 
+function laguerre{T<:AbstractFloat}(n::Integer, α::T, 
                                     endpt::EndPt=neither)
-    @assert alpha > -1.0
-    a, b, μ0 = laguerre_coeff(n, alpha, endpt)
-    custom_gauss_rule(zero(T), convert(T, Inf), a, b, μ0, endpt)
+    @assert α > -1.0
+    @assert endpt in [neither, left]
+    a, b = laguerre_coefs(n, α)
+    custom_gauss_rule(zero(T), convert(T, Inf), a, b, endpt)
 end
 
-function laguerre_coeff{T<:AbstractFloat}(n::Integer, alpha::T, 
-                                          endpt::EndPt)
-    @assert endpt in [neither, left]
-    μ0 = gamma(alpha+1)
+function laguerre_coefs{T<:AbstractFloat}(n::Integer, α::T)
     a = zeros(T, n)
-    b = zeros(T, n)
+    b = zeros(T, n+1)
+    b[1] = sqrt(gamma(α+1))
     for i = 1:n
-        a[i] = 2i - 1 + alpha
-        b[i] = sqrt( i*(alpha+i) )
+        a[i] = 2i - 1 + α
+        b[i+1] = sqrt( i*(α+i) )
     end
-    return a, b, μ0
+    return a, b
 end
 
 """
@@ -263,9 +249,8 @@ for the interval -oo < x < oo with weight function
     w(x) = exp(-x^2).
 """
 function hermite{T<:AbstractFloat}(::Type{T}, n::Integer)
-    a, b, μ0 = hermite_coeff(T, n)
-    custom_gauss_rule(convert(T, -Inf), convert(T, Inf), a, b, 
-                      μ0, neither)
+    a, b = hermite_coefs(T, n)
+    custom_gauss_rule(convert(T, -Inf), convert(T, Inf), a, b, neither)
 end
 
 """
@@ -275,20 +260,26 @@ Convenience function with type T = Float64.
 """
 hermite(n) = hermite(Float64, n)
 
-function hermite_coeff{T<:AbstractFloat}(::Type{T}, n::Integer)
-    μ0 = sqrt(convert(T, pi))
+function hermite_coefs{T<:AbstractFloat}(::Type{T}, n::Integer)
     a = zeros(T, n)
-    b = zeros(T, n)
+    b = zeros(T, n+1)
+    b[1] = sqrt(sqrt(convert(T, pi)))
     for i = 1:n
         iT = convert(T, i)
-        b[i] = sqrt(iT/2)
+        b[i+1] = sqrt(iT/2)
     end
-    return a, b, μ0
+    return a, b
 end
 
-function logweight_coef{T<:AbstractFloat}(::Type{T}, n::Integer, 
+function logweight_coefs{T<:AbstractFloat}(::Type{T}, n::Integer, 
                                           r::Integer, endpt::EndPt)
-    a, b, ν0 = legendre_coeff(T, n, endpt)
+    a, b = legendre_coefs(T, n)
+    C = zeros(T, 2n-1)
+    C[1] = one(T)
+    for l = 1:2n-2
+        lT = convert(T, l)
+        C[l+1] = 2(2-1/lT) * C[l]
+    end
 end
 
 function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T, 
@@ -317,7 +308,7 @@ function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T,
     # x, w hold the points and weights.
     #
     n = length(a)
-    @assert length(b) == n
+    @assert length(b) == n+1
     if endpt == left 
         if n == 1
             a[1] = lo
@@ -345,80 +336,28 @@ function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T,
         w[i] = (b[1] * w[i])^2
     end
     idx = sortperm(a)
-    return a[idx], w[idx]
-end
-
-function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T, 
-         a::Array{T,1}, b::Array{T,1}, μ0::T, endpt::EndPt,
-         maxits::Integer=maxiterations[T])
-    #
-    # On entry:
-    #
-    # a, b hold the coefficients (as given, for instance, by
-    # legendre_coeff) in the three-term recurrence relation
-    # for the orthonormal polynomials p_0, p_1, p_2, ... , that is,
-    #
-    #    b[j] p (x) = (x-a[j]) p   (x) - b[j-1] p   (x).
-    #          j                j-1              j-2
-    #      
-    # μ0 holds the zeroth moment of the weight function, that is
-    #
-    #          / hi
-    #         |
-    #    μ0 = | w(x) dx.
-    #         |
-    #         / lo
-    #
-    # On return:
-    #
-    # x, w hold the points and weights.
-    #
-    warn("This method will be removed in GaussQuadrature 0.4")
-    n = length(a)
-    @assert length(b) == n
-    if endpt == left 
-        if n == 1
-            a[1] = lo
-        else
-            a[n] = solve(n, lo, a, b) * b[n-1]^2 + lo
-        end
+    # Ensure end point values are exact.
+    if endpt == left
+        a[idx[1]] = lo
     elseif endpt == right
-        if n == 1
-            a[1] = hi
-        else
-            a[n] = solve(n, hi, a, b) * b[n-1]^2 + hi
-        end
-    elseif endpt == both
-        if n == 1 
-            error("Must have at least two points for both ends.")
-        end 
-        g = solve(n, lo, a, b)
-        t1 = ( hi - lo ) / ( g - solve(n, hi, a, b) )
-        b[n-1] = sqrt(t1)
-        a[n] = lo + g * t1
+        a[idx[n]] = hi 
     end
-    w = zero(a)
-    steig!(a, b, w, maxits)
-    for i = 1:n
-        w[i] = μ0 * w[i]^2
-    end
-    idx = sortperm(a)
     return a[idx], w[idx]
 end
 
 function modified_chebyshev{T<:AbstractFloat}(
                   a::Vector{T}, b::Vector{T}, μ::Vector{T})
     n = length(a)
-    @assert length(b) == n && length(μ) == 2n && n >= 1
+    @assert length(b) == n+1 && length(μ) == 2n && n >= 1
     σ = zeros(T, 2n, n)
     for l = 1:2n
         σ[l,1] = μ[l]
     end
     α = zeros(T, n)
-    β = zeros(T, n)
+    β = zeros(T, n+1)
     α[1] = a[1] + μ[2]/μ[1]
     β[1] = sqrt(μ[1])
-    if n >= 1
+    if n >= 2
         for l = 1:2n-2
             σ[l+1,2] = ( σ[l+2,1] + ( a[l] - α[1] ) * σ[l+1,1]
   	             + b[l]^2 * σ[l,1] )
@@ -430,8 +369,8 @@ function modified_chebyshev{T<:AbstractFloat}(
                 σ[l+1,k+1] = ( σ[l+2,k] + ( a[l] - α[k] ) * σ[l+1,k]
                          + b[l]^2 * σ[l,k] - β[k]^2 * σ[l+1,k-1] )
             end
-	    α[k] = a[k] + σ[k+2,k+1] / σ[k+1,k+1] - σ[k+1,k] / σ[k,k]
-	    β[k] = sqrt(σ[k+1,k+1] / σ[k,k])
+	    α[k+1] = a[k+1] + σ[k+2,k+1] / σ[k+1,k+1] - σ[k+1,k] / σ[k,k]
+	    β[k+1] = sqrt(σ[k+1,k+1] / σ[k,k])
         end
     end
     return α, β
@@ -451,7 +390,7 @@ function solve{T<:AbstractFloat}(n::Integer, shift::T,
     #
     t = a[1] - shift
     for i = 2:n-1
-        t = a[i] - shift - b[i-1]^2 / t
+        t = a[i] - shift - b[i]^2 / t
     end
     return one(t) / t
 end
@@ -483,9 +422,9 @@ function special_eigenproblem!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1},
     # This is a modified version of the Eispack routine imtql2.
     #
     n = length(z)
-    z[1] = 1
-    z[2:n] = 0
-    e[1] = 0
+    z[1] = one(T) 
+    z[2:n] = zero(T) 
+    e[n+1] = zero(T)
 
     if n == 1 # Nothing to do for a 1x1 matrix.
         return
@@ -543,101 +482,8 @@ function special_eigenproblem!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1},
                 z[i]   = c * z[i] - s * f
             end # loop over i
             d[l] -= p
-            e[l] = g
-            e[m] = zero(T)
-        end # loop over j
-    end # loop over l
-end
-
-function steig!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1}, 
-                                  z::Array{T,1}, maxits::Integer)
-    #
-    # Finds the eigenvalues and first components of the normalised
-    # eigenvectors of a symmetric tridiagonal matrix by the implicit
-    # QL method.
-    #
-    # d[i]   On entry, holds the ith diagonal entry of the matrix. 
-    #        On exit, holds the ith eigenvalue.
-    #
-    # e[i]   On entry, holds the [i+1,i] entry of the matrix for
-    #        i = 1, 2, ..., n-1.  (The value of e[n] is not used.)
-    #        On exit, e is overwritten.
-    #
-    # z[i]   On exit, holds the first component of the ith normalised
-    #        eigenvector associated with d[i].
-    #
-    # maxits The maximum number of QL iterations.
-    #
-    # Martin and Wilkinson, Numer. Math. 12: 377-383 (1968).
-    # Dubrulle, Numer. Math. 15: 450 (1970).
-    # Handbook for Automatic Computation, Vol ii, Linear Algebra, 
-    #        pp. 241-248, 1971.
-    #
-    # This is a modified version of the Eispack routine imtql2.
-    #
-    n = length(z)
-    z[1] = 1
-    z[2:n] = 0
-    e[n] = 0
-
-    if n == 1 # Nothing to do for a 1x1 matrix.
-        return
-    end
-    for l = 1:n
-        for j = 1:maxits
-            # Look for small off-diagonal elements.
-            m = n
-            for i = l:n-1
-                if abs(e[i]) <= eps(T) * ( abs(d[i]) + abs(d[i+1]) )
-                    m = i
-                    break   
-                end
-            end
-            p = d[l]
-            if m == l
-                continue
-            end
-            if j == maxits
-                msg = @sprintf("No convergence after %d iterations", j)
-                msg *= " (try increasing maxits)"
-                error(msg)
-            end
-            # Form shift
-            g = ( d[l+1] - p ) / ( 2 * e[l] )
-            r = hypot(g, one(T))
-            g = d[m] - p + e[l] / ( g + copysign(r, g) )
-            s = one(T)
-            c = one(T)
-            p = zero(T)
-            for i = m-1:-1:l
-                f = s * e[i]
-                b = c * e[i]
-                if abs(f) <  abs(g)
-                    s = f / g
-                    r = hypot(s, one(T))
-                    e[i+1] = g * r
-                    c = one(T) / r
-                    s *= c
-                else
-                    c = g / f
-                    r = hypot(c, one(T))
-                    e[i+1] = f * r
-                    s = one(T) / r
-                    c *= s
-                end 
-                g = d[i+1] - p
-                r = ( d[i] - g ) * s + 2 * c * b
-                p = s * r
-                d[i+1] = g + p
-                g = c * r - b
-                # Form first component of vector.
-                f = z[i+1]
-                z[i+1] = s * z[i] + c * f
-                z[i]   = c * z[i] - s * f
-            end # loop over i
-            d[l] -= p
-            e[l] = g
-            e[m] = zero(T)
+            e[l+1] = g
+            e[m+1] = zero(T)
         end # loop over j
     end # loop over l
 end

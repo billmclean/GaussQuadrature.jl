@@ -1,7 +1,7 @@
 using GaussQuadrature
 using Base.Test
 
-# write your own tests here
+include("test_eigen.jl")
 include("test_legendre.jl")
 include("test_chebyshev.jl")
 include("test_jacobi.jl")
