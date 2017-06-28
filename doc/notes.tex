@@ -708,18 +708,36 @@ so
 		-\frac{1}{\rho+1-j}\biggr).
 \]
 Hence,
-\[
+\begin{equation}\label{eq: Cl nul}
 C_l\nu_l=\frac{1}{\rho+1}\biggl[\frac{1}{\rho+1}
 	+\sum_{j=1}^{l-1}\biggl(\frac{1}{\rho+1+j}
 		-\frac{1}{\rho+1-j}\biggr)\biggr]
 	\prod_{j=1}^{l-1}\frac{\rho+1-j}{\rho+1+j},
-\]
+\end{equation}
 and since
 \[
 C_{l+1}=\frac{(2l)!}{(l!)^2}=\frac{(2l)(2l-1)}{l^2}\,C_l
 	=\frac{2(2l-1)}{l}\,C_l
 \]
 we can compute these coefficients recursively, starting with $C_1=1$.
+
+If $\rho=r$ then we can use the formula~\eqref{eq: Cl nul} to compute
+$C_l\nu_l$ for $1\le l\le r+1$.  Next, for $l=r+2$,
+\[
+C_{r+2}\nu_{r+2}=-\,\frac{(r!)^2}{(2r+2)!}=\frac{-1}{2(r+1)}
+	\prod_{j=1}^r\frac{j}{2(2j+1)},
+\]
+and after that we have the recursion
+\[
+C_{l+1}\nu_{l+1}=-\frac{l-r-1}{l+r+1}\,C_l\nu_l
+	\quad\text{for $l\ge r+2$,}
+\]
+or equivalently,
+\[
+\nu_{l+1}=-\frac{l-r-1}{l+r+1}\,\frac{l\nu_l}{2(2l-1)}
+	\quad\text{for $l\ge r+2$.}
+\]
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -76,6 +76,7 @@ export chebyshev, chebyshev_coefs
 export jacobi, jacobi_coefs
 export laguerre, laguerre_coefs
 export hermite, hermite_coefs
+export logweight, logweight_coefs
 export custom_gauss_rule, orthonormal_poly
 export special_eigenproblem! 
 
@@ -271,15 +272,66 @@ function hermite_coefs{T<:AbstractFloat}(::Type{T}, n::Integer)
     return a, b
 end
 
-function logweight_coefs{T<:AbstractFloat}(::Type{T}, n::Integer, 
-                                          r::Integer, endpt::EndPt)
-    a, b = legendre_coefs(T, n)
-    C = zeros(T, 2n-1)
+function logweight{T<:AbstractFloat}(::Type{T}, n::Integer, r::Integer, 
+                                     endpt::EndPt=neither)
+    α, β = logweight_coefs(T, n, r)
+    custom_gauss_rule(zero(T), one(T), α, β, endpt)
+end
+
+logweight(n, r, endpt=neither) = logweight(Float64, n, r, endpt)
+
+function logweight_coefs{T<:AbstractFloat}(::Type{T}, n::Integer, r::Integer)
+    @assert r >= 0
+    @assert n >= 0
+    # Compute the modified moments.
+    m = min(2n, r+1)
+    C = zeros(T, m)
     C[1] = one(T)
-    for l = 1:2n-2
+    for l = 1:m-1
         lT = convert(T, l)
         C[l+1] = 2(2-1/lT) * C[l]
     end
+    rrp1 = 1 / convert(T, r+1) # reciprocal r+1
+    s = rrp1
+    p = one(T)
+    ν = zeros(T, 2n)
+    ν[1] = rrp1 * s
+    for l = 2:m
+        j = l - 1
+        rrpj = 1 / convert(T, r + 1 + j)
+        rrmj = 1 / convert(T, r + 1 - j)
+        s +=  rrpj - rrmj
+        p *= rmj / rpj
+        ν[l] = rrp1 * s * p / C[l]
+    end
+    if 2n > r+1
+        l = r + 1
+        rl = 1 / convert(T, l)
+        Crp2 = 2 * (2l-1) * rl * C[r+1] 
+        p = one(T)
+        for j = 1:r
+            p *= j / convert(T, 2(2j+1))
+        end
+        ν[r+2] = - p / ( 2(r+1)*Crp2 )
+        for l = r+2:2n-1
+            ν[l+1] = - ( ( (l-r-1)/ convert(T, l+r+1) )
+                       * ( l * ν[l] / convert(T, 2(2l-1) ) ) )
+        end
+    end
+    a, b = shifted_legendre_coefs(T, 2n)
+    α, β = modified_chebyshev(a, b, ν)
+    return α, β
+end
+
+function shifted_legendre_coefs(T, n)
+    a = zeros(T, n)
+    b = zeros(T, n+1)
+    fill!(a, 1/convert(T,2))
+    b[1] = one(T)
+    for k = 2:n+1
+        b[k] = (k-1) / ( 2 * sqrt( convert(T, (2k-1)*(2k-3)) ) )
+    end
+    return a, b
 end
 
 function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T, 
@@ -346,18 +398,21 @@ function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T,
 end
 
 function modified_chebyshev{T<:AbstractFloat}(
-                  a::Vector{T}, b::Vector{T}, μ::Vector{T})
-    n = length(a)
-    @assert length(b) == n+1 && length(μ) == 2n && n >= 1
-    σ = zeros(T, 2n, n)
-    for l = 1:2n
-        σ[l,1] = μ[l]
-    end
+                  a::Vector{T}, b::Vector{T}, ν::Vector{T})
+    m = length(ν) 
+    @assert m % 2 == 0 && m >= 2
+    n = div(m, 2)
+    @assert length(a) >= max(1, 2n-2)
+    @assert length(b) >= max(1, 2n-2)
     α = zeros(T, n)
     β = zeros(T, n+1)
-    α[1] = a[1] + μ[2]/μ[1]
-    β[1] = sqrt(μ[1])
+    α[1] = a[1] + ν[2]/ν[1]
+    β[1] = sqrt(ν[1])
     if n >= 2
+        σ = zeros(T, 2n, n)
+        for l = 1:2n
+            σ[l,1] = ν[l]
+        end
         for l = 1:2n-2
             σ[l+1,2] = ( σ[l+2,1] + ( a[l] - α[1] ) * σ[l+1,1]
   	             + b[l]^2 * σ[l,1] )
