@@ -1,2 +1,8 @@
 *.swp
 *.pdf
+*.aux
+*.log
+*.bbl
+*.toc
+*.blg
+*.out
