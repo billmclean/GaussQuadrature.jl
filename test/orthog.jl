@@ -11,24 +11,26 @@ xchebyshev_first(n, alpha, beta, endpt) = chebyshev(T, n, 1, endpt)
 xchebyshev_second(n, alpha, beta, endpt) = chebyshev(T, n, 2, endpt)
 xhermite(n, alpha, beta, endpt) = hermite(T, n)
 xlaguerre(n, alpha, beta, endpt) = laguerre(n, alpha, endpt)
+xlogweight(n, alpha, beta , endpt) = logweight(T, n, 
+                                     round(Int64,alpha), endpt)
 
-xlegendre_coeff(n, alpha, beta, endpt) = legendre_coeff(T, n, endpt)
-xchebyshev_first_coeff(n, alpha, beta, endpt) = chebyshev_coeff(T, 
-                                                n, 1, endpt)
-xchebyshev_second_coeff(n, alpha, beta, endpt) = chebyshev_coeff(T, 
-                                                 n, 2, endpt)
-xhermite_coeff(n, alpha, beta, endpt) = hermite_coeff(T, n)
-xlaguerre_coeff(n, alpha, beta, endpt) = laguerre_coeff(n, alpha, endpt)
+xlegendre_coefs(n, alpha, beta) = legendre_coefs(T, n)
+xchebyshev_first_coefs(n, alpha, beta) = chebyshev_coefs(T, n, 1)
+xchebyshev_second_coefs(n, alpha, beta) = chebyshev_coefs(T, n, 2)
+xhermite_coefs(n, alpha, beta) = hermite_coefs(T, n)
+xlaguerre_coefs(n, alpha, beta) = laguerre_coefs(n, alpha)
+xlogweight_coefs(n, alpha, beta) = logweight_coefs(T, n, 
+                                   round(Int64,alpha))
 
 rule = [xlegendre, xchebyshev_first, xchebyshev_second, 
-        xhermite, jacobi, xlaguerre]
+        xhermite, jacobi, xlaguerre, xlogweight]
 
-coeff = [ xlegendre_coeff, xchebyshev_first_coeff, 
-          xchebyshev_second_coeff, xhermite_coeff, jacobi_coeff, 
-          xlaguerre_coeff ]
+coefs = [ xlegendre_coefs, xchebyshev_first_coefs, 
+          xchebyshev_second_coefs, xhermite_coefs, jacobi_coefs, 
+          xlaguerre_coefs, xlogweight_coefs ]
 
 name = ["Legendre", "Chebyshev (first)", "Chebyshev (second)",
-         "Hermite", "Jacobi", "Laguerre" ]
+         "Hermite", "Jacobi", "Laguerre", "Log weight" ]
 
 alpha = one(T)
 beta  = one(T)/2
@@ -65,16 +67,16 @@ function dop(n, endpt)
     end
 end
 
-function test_rule(descr, nmin, nmax, rule, coeff, name, endpt)
+function test_rule(descr, nmin, nmax, rule, coefs, name, endpt)
     println("\nTesting ", descr, " rules with ", nmin, " to ", 
             nmax, " points")
-    for case in zip(rule, coeff, name)
+    for case in zip(rule, coefs, name)
         rulefunc, coeffunc, rulename = case
         maxd = 0.0
         for n = nmin:nmax
             x, w = rulefunc(n, alpha, beta, endpt)
-            a, b, muzero = coeffunc(2n, alpha, beta, endpt)
-            p = orthonormal_poly(x, a, b, muzero)
+            a, b = coeffunc(2n, alpha, beta)
+            p = orthonormal_poly(x, a, b)
             d = discrepancy(n, dop(n, endpt), w, p)
             maxd = max(d, maxd)
         end
@@ -82,17 +84,17 @@ function test_rule(descr, nmin, nmax, rule, coeff, name, endpt)
     end
 end
 
-test_rule("plain Gauss", 1, 5, rule, coeff, name, neither)
+test_rule("plain Gauss", 1, 5, rule, coefs, name, neither)
 
 filter!(x->(x!=xhermite), rule)
-filter!(x->(x!=xhermite_coeff), coeff)
+filter!(x->(x!=xhermite_coefs), coefs)
 filter!(x->(x!="Hermite"), name)
 
-test_rule("left Radau", 1, 5, rule, coeff, name, left)
+test_rule("left Radau", 1, 5, rule, coefs, name, left)
 
 filter!(x->(x!=xlaguerre), rule)
-filter!(x->(x!=xlaguerre_coeff), coeff)
+filter!(x->(x!=xlaguerre_coefs), coefs)
 filter!(x->(x!="Laguerre"), name)
 
-test_rule("right Radau", 1, 5, rule, coeff, name, right)
-test_rule("Lobatto", 2, 5, rule, coeff, name, both)
+test_rule("right Radau", 1, 5, rule, coefs, name, right)
+test_rule("Lobatto", 2, 5, rule, coefs, name, both)

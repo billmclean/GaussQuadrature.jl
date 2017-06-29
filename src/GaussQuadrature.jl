@@ -76,7 +76,9 @@ export chebyshev, chebyshev_coefs
 export jacobi, jacobi_coefs
 export laguerre, laguerre_coefs
 export hermite, hermite_coefs
+export shifted_legendre_coefs
 export logweight, logweight_coefs
+export leading_legendre_coef, modified_moments, modified_chebyshev
 export custom_gauss_rule, orthonormal_poly
 export special_eigenproblem! 
 
@@ -126,7 +128,7 @@ function legendre_coefs{T<:AbstractFloat}(::Type{T}, n::Integer)
     a = zeros(T, n)
     b = zeros(T, n+1)
     b[1] = sqrt(convert(T, 2))
-    for k = 2:n
+    for k = 2:n+1
         b[k] = (k-1) / sqrt(convert(T, (2k-1)*(2k-3)))
     end
     return a, b
@@ -281,16 +283,33 @@ end
 logweight(n, r, endpt=neither) = logweight(Float64, n, r, endpt)
 
 function logweight_coefs{T<:AbstractFloat}(::Type{T}, n::Integer, r::Integer)
+    a, b = shifted_legendre_coefs(T, 2n)
+    ν, C = modified_moments(T, n, r)
+    α, β, σ = modified_chebyshev(a, b, ν)
+    return α, β
+end
+
+"""
+C = leading_legendre_coef(n)
+
+Returns C[l+1] = binomial(2l,l) for 0 ≤ l ≤ n-1, so that
+P_l(2x-1) = C[l+1]x^l + ...
+"""
+function leading_legendre_coef(n)
+    C = zeros(Int64, n)
+    C[1] = 1
+    for l = 1:n-1
+        C[l+1] = div(2(2l-1)*C[l], l)
+    end
+    return C
+end
+
+function modified_moments{T<:AbstractFloat}(::Type{T}, 
+                         n::Integer, r::Integer)
     @assert r >= 0
     @assert n >= 0
-    # Compute the modified moments.
     m = min(2n, r+1)
-    C = zeros(T, m)
-    C[1] = one(T)
-    for l = 1:m-1
-        lT = convert(T, l)
-        C[l+1] = 2(2-1/lT) * C[l]
-    end
+    C = leading_legendre_coef(m)
     rrp1 = 1 / convert(T, r+1) # reciprocal r+1
     s = rrp1
     p = one(T)
@@ -298,10 +317,11 @@ function logweight_coefs{T<:AbstractFloat}(::Type{T}, n::Integer, r::Integer)
     ν[1] = rrp1 * s
     for l = 2:m
         j = l - 1
-        rrpj = 1 / convert(T, r + 1 + j)
-        rrmj = 1 / convert(T, r + 1 - j)
+	rrpj = 1 / convert(T, r + 1 + j)
+        rmj = convert(T, r + 1 - j)
+	rrmj = 1 / rmj
         s +=  rrpj - rrmj
-        p *= rmj / rpj
+        p *= rmj * rrpj
         ν[l] = rrp1 * s * p / C[l]
     end
     if 2n > r+1
@@ -318,9 +338,38 @@ function logweight_coefs{T<:AbstractFloat}(::Type{T}, n::Integer, r::Integer)
                        * ( l * ν[l] / convert(T, 2(2l-1) ) ) )
         end
     end
-    a, b = shifted_legendre_coefs(T, 2n)
-    α, β = modified_chebyshev(a, b, ν)
-    return α, β
+    return ν, C
+end
+
+function modified_moments{T<:AbstractFloat}(n::Integer, ρ::T)
+    @assert ρ > -1 
+    @assert n >= 0
+    r = (ρ<0) ? 0 : round(Int64, ρ)
+    m = min(2n, r+1)
+    C = leading_legendre_coef(2n)
+    S = 1 / ( 1 + ρ )
+    B = one(T)
+    ν = zeros(T, 2n)
+    ν[1] = S / (1+ρ)
+    for l = 2:m
+        j = l - 1
+        B *= (ρ+1-j) / (ρ+1+j)
+	S += 1 / (ρ+1+j) - 1 / (ρ+1-j)
+        ν[l] = B * S / ( C[l] * (1+ρ) )
+    end
+    if 2n > r+1
+        l = r + 2
+	j = l - 1
+	X = ( (ρ-r) / (ρ+r+2) - 1 ) / (ρ+r+2)
+	ν[l] = ( B / (1+ρ) ) * ( X + ( (ρ-r)/(ρ+r+2) ) * S ) / C[l]
+        for l = r+3:2n
+	    j = l - 1
+            B *= (ρ+1-j) / (ρ+1+j)
+            S += 1 / (ρ+1+j) - 1 / (ρ+1-j)
+	    ν[l] = ( B / (1+ρ) ) * ( X + ( (ρ-r)/(ρ+r+2) ) * S ) / C[l]
+        end
+    end
+    return ν, C
 end
 
 function shifted_legendre_coefs(T, n)
@@ -402,8 +451,8 @@ function modified_chebyshev{T<:AbstractFloat}(
     m = length(ν) 
     @assert m % 2 == 0 && m >= 2
     n = div(m, 2)
-    @assert length(a) >= max(1, 2n-2)
-    @assert length(b) >= max(1, 2n-2)
+    @assert length(a) >= max(1, 2n-1)
+    @assert length(b) >= max(1, 2n-1)
     α = zeros(T, n)
     β = zeros(T, n+1)
     α[1] = a[1] + ν[2]/ν[1]
@@ -414,21 +463,21 @@ function modified_chebyshev{T<:AbstractFloat}(
             σ[l,1] = ν[l]
         end
         for l = 1:2n-2
-            σ[l+1,2] = ( σ[l+2,1] + ( a[l] - α[1] ) * σ[l+1,1]
-  	             + b[l]^2 * σ[l,1] )
+            σ[l+1,2] = ( σ[l+2,1] + ( a[l+1] - α[1] ) * σ[l+1,1]
+  	             + b[l+1]^2 * σ[l,1] )
         end
         α[2] = a[2] + σ[3,2] / σ[2,2] - σ[2,1] / σ[1,1]
         β[2] = sqrt(σ[2,2] / σ[1,1])
         for k = 2:n-1
             for l = k:2n-k-1
-                σ[l+1,k+1] = ( σ[l+2,k] + ( a[l] - α[k] ) * σ[l+1,k]
-                         + b[l]^2 * σ[l,k] - β[k]^2 * σ[l+1,k-1] )
+                σ[l+1,k+1] = ( σ[l+2,k] + ( a[l+1] - α[k] ) * σ[l+1,k]
+                         + b[l+1]^2 * σ[l,k] - β[k]^2 * σ[l+1,k-1] )
             end
 	    α[k+1] = a[k+1] + σ[k+2,k+1] / σ[k+1,k+1] - σ[k+1,k] / σ[k,k]
 	    β[k+1] = sqrt(σ[k+1,k+1] / σ[k,k])
         end
     end
-    return α, β
+    return α, β, σ
 end
 
 function solve{T<:AbstractFloat}(n::Integer, shift::T, 
@@ -544,22 +593,22 @@ function special_eigenproblem!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1},
 end
 
 function orthonormal_poly{T<:AbstractFloat}(x::Array{T,1}, 
-                         a::Array{T,1}, b::Array{T,1}, μ0::T)
+                         a::Array{T,1}, b::Array{T,1})
     # p[i,j] = value at x[i] of orthonormal polynomial of degree j-1.
     m = length(x)
     n = length(a)
     p = zeros(T, m, n+1)
-    c = one(T) / sqrt(μ0)
-    rb = one(T) / b[1]
+    rb1 = one(T) / b[1]
+    rb2 = one(T) / b[2]
     for i = 1:m
-        p[i,1] = c
-        p[i,2] = rb * ( x[i] - a[1] ) * c
+        p[i,1] = rb1
+        p[i,2] = rb2 * ( x[i] - a[1] ) * p[i,1]
     end 
     for j = 2:n
-       rb = one(T) / b[j]
+       rb = one(T) / b[j+1]
        for i = 1:m
            p[i,j+1] = rb * ( (x[i]-a[j]) * p[i,j] 
-                                - b[j-1] * p[i,j-1] )
+                                - b[j] * p[i,j-1] )
        end
     end
     return p

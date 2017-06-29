@@ -54,7 +54,7 @@ a_j=\frac{\iprod{xp_{j-1},p_{j-1}}}{\|p_{j-1}\|^2}
 \quad\text{and}\quad
 b_j=\frac{\|p_{j-1}\|}{\|p_{j-2}\|},
 \]
-except that, by convention, we put $b_1=\sqrt{\int d\nu}$.
+except that, by convention, we put $b_1=\sqrt{\int d\nu}=\|p_0\|$.
 \end{theorem}
 \begin{proof}
 Since $p_j(x)-xp_{j-1}(x)$ has degree at most~$j-1$, there are 
@@ -511,8 +511,8 @@ recurrence relation~\eqref{eq: 3 term q} can be computed by putting
 and, for $k=1$, $2$, \dots, $n-1$ and $k\le l\le2n-k-1$, 
 \[
 \begin{aligned}
-\sigma_{l+1,k+1}&=\sigma_{l+2,k}+(a_l-\alpha_k)\sigma_{l+1,k}
-		+b_l^2\sigma_{lk}-\beta_k^2\sigma_{l+1,k-1},\\
+\sigma_{l+1,k+1}&=\sigma_{l+2,k}+(a_{l+1}-\alpha_k)\sigma_{l+1,k}
+		+b_{l+1}^2\sigma_{lk}-\beta_k^2\sigma_{l+1,k-1},\\
 \alpha_{k+1}&=a_{k+1}+\frac{\sigma_{k+2,k+1}}{\sigma_{k+1,k+1}}
 	-\frac{\sigma_{k+1,k}}{\sigma_{kk}},\\
 \beta_{k+1}&=\sqrt{\frac{\sigma_{k+1,k+1}}{\sigma_{kk}}}.
@@ -530,17 +530,17 @@ For $1\le k\le l$,
 \begin{align*}
 \sigma_{l+1,k+1}&=\int p_l(x)\bigl[
 (x-\alpha_k)q_{k-1}(x)-\beta_k^2q_{k-2}(x)\bigr]\,d\nu(x)\\
-	&=\int(x-a_l+a_l-\alpha_k)p_l(x)q_{k-1}(x)\,d\nu(x)
+	&=\int(x-a_{l+1}+a_{l+1}-\alpha_k)p_l(x)q_{k-1}(x)\,d\nu(x)
 		-\beta_k^2\sigma_{l+1,k-1}\\
-	&=\int\bigl[(x-a_l)p_l(x)-b_l^2p_{l-1}(x)\bigr]
+	&=\int\bigl[(x-a_{l+1})p_l(x)-b_{l+1}^2p_{l-1}(x)\bigr]
 		q_{k-1}(x)\,d\nu(x)\\
-	&\qquad{}+(a_l-\alpha_k)\sigma_{l+1,k}
-		+b_l^2\sigma_{lk}-\beta_k^2\sigma_{l+1,k-1}
+	&\qquad{}+(a_{l+1}-\alpha_k)\sigma_{l+1,k}
+		+b_{l+1}^2\sigma_{lk}-\beta_k^2\sigma_{l+1,k-1}
 \end{align*}
 so
 \[
-\sigma_{l+1,k+1}=\sigma_{l+2,k}+(a_l-\alpha_k)\sigma_{l+1,k}
-		+b_l^2\sigma_{lk}-\beta_k^2\sigma_{l+1,k-1}.
+\sigma_{l+1,k+1}=\sigma_{l+2,k}+(a_{l+1}-\alpha_k)\sigma_{l+1,k}
+		+b_{l+1}^2\sigma_{lk}-\beta_k^2\sigma_{l+1,k-1}.
 \]
 
 By Theorem~\ref{thm: 3 term},
@@ -712,7 +712,7 @@ Hence,
 C_l\nu_l=\frac{1}{\rho+1}\biggl[\frac{1}{\rho+1}
 	+\sum_{j=1}^{l-1}\biggl(\frac{1}{\rho+1+j}
 		-\frac{1}{\rho+1-j}\biggr)\biggr]
-	\prod_{j=1}^{l-1}\frac{\rho+1-j}{\rho+1+j},
+	\prod_{k=1}^{l-1}\frac{\rho+1-k}{\rho+1+k},
 \end{equation}
 and since
 \[
@@ -720,6 +720,33 @@ C_{l+1}=\frac{(2l)!}{(l!)^2}=\frac{(2l)(2l-1)}{l^2}\,C_l
 	=\frac{2(2l-1)}{l}\,C_l
 \]
 we can compute these coefficients recursively, starting with $C_1=1$.
+
+Choose a non-negative integer~$r$ such that $|\rho-r|$ is as small as 
+possible, and define
+\[
+B_l=\prod_{\substack{k=1\\ k\ne r+1}}^{l-1}\frac{\rho+1-k}{\rho+1+k}
+\]
+so that
+\[
+\prod_{k=1}^{l-1}\frac{\rho+1+k}{\rho+1-k}
+	=\frac{\rho-r}{\rho+r+2}\,B_l\quad\text{for $l\ge r+2$.}
+\]
+We can rewrite \eqref{eq: Cl nul} as
+\[
+C_l\nu_l=\frac{B_l}{1+\rho}\biggl[\frac{1}{1+\rho}+\sum_{j=1}^{l-1}
+	\biggl(\frac{1}{\rho+1+j}-\frac{1}{\rho+1-j}\biggr)
+		\biggr]\quad\text{for $1\le l\le r+1$,}
+\]
+with
+\begin{multline*}
+C_l\nu_l=\frac{B_l}{1+\rho}\,\frac{\rho-r}{\rho+r+2}\biggl[
+	\frac{1}{1+\rho}+\sum_{\substack{j=1\\ j\ne r+1}}^{l-1}\biggl(
+	\frac{1}{\rho+1+j}-\frac{1}{\rho+1-j}\biggr)\biggr]\\
++\frac{B_l}{1+\rho}\,\frac{1}{\rho+r+2}
+	\biggl(\frac{\rho-r}{\rho+r+2}-1\biggr)
+		\quad\text{for $l\ge r+2$.}
+\end{multline*}
+
 
 If $\rho=r$ then we can use the formula~\eqref{eq: Cl nul} to compute
 $C_l\nu_l$ for $1\le l\le r+1$.  Next, for $l=r+2$,

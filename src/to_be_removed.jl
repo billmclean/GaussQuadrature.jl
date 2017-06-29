@@ -1,9 +1,16 @@
 export legendre_coeff, chebyshev_coeff, jacobi_coeff
-export laguerre_coeff
+export laguerre_coeff, hermite_coeff
+
+function depwarn(old, new)
+    msg = """
+    $old will be removed in GaussQuadrature 0.4.
+    Use $new instead."""
+    warn(msg)
+end
 
 function legendre_coeff{T<:AbstractFloat}(::Type{T},
                        n::Integer, endpt::EndPt)
-    warn("This method will be removed in GaussQuadrature 0.4")
+    depwarn("legendre_coeff", "legendre_coefs")
     μ0 = convert(T, 2.0)
     a = zeros(T, n)
     b = zeros(T, n)
@@ -15,6 +22,7 @@ end
 
 function chebyshev_coeff{T<:AbstractFloat}(::Type{T},
                         n::Integer, kind::Integer, endpt::EndPt)
+    depwarn("chebyshev_coeff", "chebyshev_coefs")
     muzero = convert(T, pi)
     half = convert(T, 0.5)
     a = zeros(T, n)
@@ -31,6 +39,7 @@ end
 
 function jacobi_coeff{T<:AbstractFloat}(n::Integer, alpha::T,
                                         beta::T, endpt::EndPt)
+    depwarn("jacobi_coeff", "jacobi_coefs")
     ab = alpha + beta
     i = 2
     abi = ab + 2
@@ -52,6 +61,7 @@ end
 
 function laguerre_coeff{T<:AbstractFloat}(n::Integer, alpha::T,
                                           endpt::EndPt)
+    depwarn("laguerre_coeff", "laguerre_coefs")
     @assert endpt in [neither, left]
     μ0 = gamma(alpha+1)
     a = zeros(T, n)
@@ -64,6 +74,7 @@ function laguerre_coeff{T<:AbstractFloat}(n::Integer, alpha::T,
 end
 
 function hermite_coeff{T<:AbstractFloat}(::Type{T}, n::Integer)
+    depwarn("hermite_coeff", "hermite_coefs")
     μ0 = sqrt(convert(T, pi))
     a = zeros(T, n)
     b = zeros(T, n)
@@ -224,3 +235,26 @@ function steig!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1},
         end # loop over j
     end # loop over l
 end
+
+function orthonormal_poly{T<:AbstractFloat}(x::Array{T,1},
+                         a::Array{T,1}, b::Array{T,1}, μ0::T)
+    # p[i,j] = value at x[i] of orthonormal polynomial of degree j-1.
+    m = length(x)
+    n = length(a)
+    p = zeros(T, m, n+1)
+    c = one(T) / sqrt(μ0)
+    rb = one(T) / b[1]
+    for i = 1:m
+        p[i,1] = c
+        p[i,2] = rb * ( x[i] - a[1] ) * c
+    end
+    for j = 2:n
+       rb = one(T) / b[j]
+       for i = 1:m
+           p[i,j+1] = rb * ( (x[i]-a[j]) * p[i,j]
+                                - b[j-1] * p[i,j-1] )
+       end
+    end
+    return p
+end
+
