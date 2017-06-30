@@ -282,9 +282,21 @@ end
 
 logweight(n, r, endpt=neither) = logweight(Float64, n, r, endpt)
 
+function logweight{T<:AbstractFloat}(n::Integer, ρ::T, endpt::EndPt=neither)
+    α, β = logweight_coefs(n, ρ)
+    custom_gauss_rule(zero(T), one(T), α, β, endpt)
+end
+
 function logweight_coefs{T<:AbstractFloat}(::Type{T}, n::Integer, r::Integer)
     a, b = shifted_legendre_coefs(T, 2n)
     ν, C = modified_moments(T, n, r)
+    α, β, σ = modified_chebyshev(a, b, ν)
+    return α, β
+end
+
+function logweight_coefs{T<:AbstractFloat}(n::Integer, ρ::T)
+    a, b = shifted_legendre_coefs(T, 2n)
+    ν, C = modified_moments(n, ρ)
     α, β, σ = modified_chebyshev(a, b, ν)
     return α, β
 end
@@ -438,9 +450,9 @@ function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T,
     end
     idx = sortperm(a)
     # Ensure end point values are exact.
-    if endpt == left
+    if endpt in (left, both)
         a[idx[1]] = lo
-    elseif endpt == right
+    elseif endpt in (right, both)
         a[idx[n]] = hi 
     end
     return a[idx], w[idx]
