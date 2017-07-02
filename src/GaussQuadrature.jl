@@ -14,20 +14,14 @@ module GaussQuadrature
 # the Radau and Lobatto variants.  Thus, the sum
 #
 #           n
-#          ---
-#          \
-#           |  w[j] f(x[j])
-#          /
-#          ---
+#           ∑  w[j] f(x[j])
 #          j=1
 #
 # approximates
 #
-#          / hi
-#          |
-#          |    f(x) w(x) dx
-#          |
-#          / lo
+#           hi
+#          ∫  f(x) w(x) dx
+#          lo
 #
 # where the weight function w(x) and interval lo < x < hi are as shown
 # in the table below.
@@ -35,23 +29,29 @@ module GaussQuadrature
 # Name                      Interval     Weight Function
 #
 # Legendre                 -1 < x < 1          1      
-# Chebyshev (first kind)   -1 < x < 1     1 / sqrt(1-x^2)        
-# Chebyshev (second kind)  -1 < x < 1       sqrt(1-x^2)          
-# Jacobi                   -1 < x < 1     (1-x)^α (1+x)^β  
-# Laguerre                 0 < x < oo     x^α exp(-x)
-# Hermite                 -oo < x < oo      exp(-x^2)
+# Chebyshev (first kind)   -1 < x < 1     1 / sqrt(1-x²)        
+# Chebyshev (second kind)  -1 < x < 1       sqrt(1-x²)          
+# Jacobi                   -1 < x < 1     (1-x)ᵅ (1+x)ᵝ  
+# Laguerre                  0 < x < ∞     xᵅ exp(-x)
+# Hermite                  -∞ < x < ∞      exp(-x²)
+#
+# In addition to these classical rules, logarithmic weights of the
+# form
+#
+#    w(x) = x^ρ log(1/x)   for 0 < x < 1.
 #
 # For the Jacobi and Laguerre rules we require α > -1 and
-# β > -1, so that the weight function is integrable. 
+# β > -1, so that the weight function is integrable.  Likewise, for
+# log weight we require ρ > -1.
 #
 # Use the endpt argument to include one or both of the end points
 # of the interval of integration as an abscissa in the quadrature 
 # rule, as follows.
 # 
-# endpt = neither   Default      a < x[j] < b, j = 1:n.
-# endpt = left      Left Radau   a = x[1] < x[j] < b, j = 2:n.
-# endpt = right     Right Radau  a < x[j] < x[n] = b, j = 1:n-1.
-# endpt = both      Lobatto      a = x[1] < x[j] < x[n] = b, j = 2:n-1.
+# endpt = neither   Default      lo < x[j] < hi, j = 1:n.
+# endpt = left      Left Radau   lo = x[1] < x[j] < hi, j = 2:n.
+# endpt = right     Right Radau  lo < x[j] < x[n] = hi, j = 1:n-1.
+# endpt = both      Lobatto      lo = x[1] < x[j] < x[n] = hi, j = 2:n-1.
 #
 # These labels make up an enumeration of type EndPt.
 #
@@ -82,11 +82,9 @@ export leading_legendre_coef, modified_moments, modified_chebyshev
 export custom_gauss_rule, orthonormal_poly
 export special_eigenproblem! 
 
-"""
-Enumeration type used to specify which endpoints of the integration
-interval should be included amongst the quadrature points: neither,
-left, right or both.
-"""
+# Enumeration type used to specify which endpoints of the integration
+# interval should be included amongst the quadrature points: neither,
+# left, right or both.
 immutable EndPt
     label :: Char
 end
@@ -103,24 +101,25 @@ include("to_be_removed.jl")
 maxiterations = Dict(Float32 => 30, Float64 => 30, BigFloat => 40)
 
 """
-x, w = legendre(T, n, endpt=neither)
+    x, w = legendre(T, n, endpt=neither)
 
-Returns points x and weights w for the n-point Gauss-Legendre rule
-for the interval -1 < x < 1 with weight function w(x) = 1.
+Returns points `x` and weights `w` for the `n`-point Gauss-Legendre rule
+for the interval `-1 < x < 1` with weight function `w(x) = 1`.
 
-Use endpt=left, right, both for the left Radau, right Radau, Lobatto 
-rules.
+Use `endpt=left`, `right` or `both` for the left Radau, right Radau or
+Lobatto rules, respectively.
 """
 function legendre{T<:AbstractFloat}(::Type{T}, 
                  n::Integer, endpt::EndPt=neither)
+    @assert n ≥ 1
     a, b = legendre_coefs(T, n)
     return custom_gauss_rule(-one(T), one(T), a, b, endpt)
 end
 
 """
-x, w = legendre(n, endpt=neither)
+Convenience function with type `T = Float64`:
 
-Convenience function with type T = Float64.
+    x, w = legendre(n, endpt=neither)
 """
 legendre(n, endpt=neither) = legendre(Float64, n, endpt)
 
@@ -135,27 +134,29 @@ function legendre_coefs{T<:AbstractFloat}(::Type{T}, n::Integer)
 end
 
 """
-x, w = chebyshev(T, n, kind=1, endpt=neither)
+    x, w = chebyshev(T, n, kind=1, endpt=neither)
 
-Returns points x and weights w for the n-point Gauss-Chebyshev rule
-for the interval -1 < x < 1 with weight function
+Returns points `x` and weights `w` for the `n`-point Gauss-Chebyshev rule
+for the interval `-1 < x < 1` with weight function
 
-    w(x) = 1 / sqrt(1-x^2) if kind=1
-    w(x) = sqrt(1-x^2)     if kind=2.
+    w(x) = 1 / sqrt{1-x²}   if kind=1
+    w(x) = sqrt(1-x²)       if kind=2.
 
-Use endpt=left, right, both for the left Radau, right Radau, Lobatto 
-rules.
+Use `endpt=left`, `right` or `both` for the left Radau, right Radau or
+Lobatto rules, respectively.
 """
 function chebyshev{T<:AbstractFloat}(::Type{T},
                   n::Integer, kind::Integer=1, endpt::EndPt=neither)
+    @assert n ≥ 1
     a, b = chebyshev_coefs(T, n, kind)
     return custom_gauss_rule(-one(T), one(T), a, b, endpt)
 end
 
 """
-x, w = chebyshev(n, kind=1, endpt=neither)
+Convenience function with type `T = Float64`:
 
-Convenience function with type T = Float64.
+    x, w = chebyshev(n, kind=1, endpt=neither)
+
 """
 chebyshev(n, kind=1, endpt=neither) = chebyshev(Float64, n, kind, 
                                                 endpt)
@@ -178,18 +179,19 @@ function chebyshev_coefs{T<:AbstractFloat}(::Type{T},
 end
 
 """
-x, w = jacobi(n, α, β, endpt=neither)
+    x, w = jacobi(n, α, β, endpt=neither)
 
-Returns points x and weights w for the n-point Gauss-Jacobi rule
-for the interval -1 < x < 1 with weight function
+Returns points `x` and weights `w` for the `n`-point Gauss-Jacobi rule
+for the interval `-1 < x < 1` with weight function
 
-    w(x) = (1-x)^α (1+x)^β.
+    w(x) = (1-x)ᵅ (1+x)ᵝ.
 
-Use endpt=left, right, both for the left Radau, right Radau, Lobatto 
-rules.
+Use `endpt=left`, `right` or `both` for the left Radau, right Radau or
+Lobatto rules, respectively.
 """
 function jacobi{T<:AbstractFloat}(n::Integer, α::T, β::T, 
                                   endpt::EndPt=neither)
+    @assert n ≥ 1
     @assert α > -1.0 && β > -1.0
     a, b = jacobi_coefs(n, α, β)
     custom_gauss_rule(-one(T), one(T), a, b, endpt)
@@ -215,17 +217,18 @@ function jacobi_coefs{T<:AbstractFloat}(n::Integer, α::T, β::T)
 end
 
 """
-x, w = laguerre(n, α, endpt=neither)
+    x, w = laguerre(n, α, endpt=neither)
 
-Returns points x and weights w for the n-point Gauss-Laguerre rule
-for the interval 0 < x < oo with weight function
+Returns points `x` and weights `w` for the `n`-point Gauss-Laguerre rule
+for the interval `0 < x < ∞` with weight function
 
-    w(x) = x^α exp(-x)
+    w(x) = xᵅ exp(-x),   α > -1.
 
-Use endpt=left for the left Radau rule.
+Use `endpt=left` for the left Radau rule.
 """
 function laguerre{T<:AbstractFloat}(n::Integer, α::T, 
                                     endpt::EndPt=neither)
+    @assert n ≥ 1
     @assert α > -1.0
     @assert endpt in [neither, left]
     a, b = laguerre_coefs(n, α)
@@ -244,22 +247,23 @@ function laguerre_coefs{T<:AbstractFloat}(n::Integer, α::T)
 end
 
 """
-x, w = hermite(T, n)
+    x, w = hermite(T, n)
 
-Returns points x and weights w for the n-point Gauss-Laguerre rule
-for the interval -oo < x < oo with weight function
+Returns points `x` and weights `w` for the `n`-point Gauss-Laguerre rule
+for the interval `-∞ < x < ∞` with weight function
 
-    w(x) = exp(-x^2).
+    w(x) = exp(-x²).
 """
 function hermite{T<:AbstractFloat}(::Type{T}, n::Integer)
+    @assert n ≥ 1
     a, b = hermite_coefs(T, n)
     custom_gauss_rule(convert(T, -Inf), convert(T, Inf), a, b, neither)
 end
 
 """
-x, w = hermite(n)
+Convenience function with type `T = Float64`:
 
-Convenience function with type T = Float64.
+    x, w = hermite(n)
 """
 hermite(n) = hermite(Float64, n)
 
@@ -274,15 +278,37 @@ function hermite_coefs{T<:AbstractFloat}(::Type{T}, n::Integer)
     return a, b
 end
 
+"""
+    x, w = logweight(T, n, r, endpt=neither)
+
+Returns points `x` and weights `w` for the n-point Gauss rule on
+the interval `0 < x < 1` with weight function
+
+    w(x) = xʳ log(1/x),    r ≥ 0.
+"""
 function logweight{T<:AbstractFloat}(::Type{T}, n::Integer, r::Integer, 
                                      endpt::EndPt=neither)
+    @assert n ≥ 1
+    @assert r ≥ 0
     α, β = logweight_coefs(T, n, r)
     custom_gauss_rule(zero(T), one(T), α, β, endpt)
 end
 
-logweight(n, r, endpt=neither) = logweight(Float64, n, r, endpt)
+"""
+Convenience function with type `T = Float64`:
 
+    x, w = logweight(n, r=0, endpt=neither)
+"""
+logweight(n, r=0, endpt=neither) = logweight(Float64, n, r, endpt)
+
+"""
+Alternative version with `w(x) = x^ρ log(1/x)` for real `ρ > -1`:
+
+    x, w = logweight(n, ρ, endpt=neither)
+"""
 function logweight{T<:AbstractFloat}(n::Integer, ρ::T, endpt::EndPt=neither)
+    @assert n ≥ 1
+    @assert ρ > -1
     α, β = logweight_coefs(n, ρ)
     custom_gauss_rule(zero(T), one(T), α, β, endpt)
 end
@@ -304,8 +330,8 @@ end
 """
 C = leading_legendre_coef(n)
 
-Returns C[l+1] = binomial(2l,l) for 0 ≤ l ≤ n-1, so that
-P_l(2x-1) = C[l+1]x^l + ...
+Returns `C[l+1] = binomial(2l,l)` for `0 ≤ l ≤ n-1`, so that
+`P_l(2x-1) = C[l+1]x^l + ...`
 """
 function leading_legendre_coef(n)
     C = zeros(Int64, n)
@@ -318,8 +344,8 @@ end
 
 function modified_moments{T<:AbstractFloat}(::Type{T}, 
                          n::Integer, r::Integer)
-    @assert r >= 0
-    @assert n >= 0
+    @assert r ≥ 0
+    @assert n ≥ 0
     m = min(2n, r+1)
     C = leading_legendre_coef(m)
     rrp1 = 1 / convert(T, r+1) # reciprocal r+1
@@ -355,7 +381,7 @@ end
 
 function modified_moments{T<:AbstractFloat}(n::Integer, ρ::T)
     @assert ρ > -1 
-    @assert n >= 0
+    @assert n ≥ 0
     r = (ρ<0) ? 0 : round(Int64, ρ)
     m = min(2n, r+1)
     C = leading_legendre_coef(2n)
@@ -395,31 +421,33 @@ function shifted_legendre_coefs(T, n)
     return a, b
 end
 
+"""
+    x, w = custom_gauss_rule(lo, hi, a, b, endpt, maxits=maxiterations[T])
+
+Generates the points `x` and weights `w` for a Gauss rule with weight
+function `w(x)` on the interval `lo < x < hi`.
+
+The arrays `a` and `b` hold the coefficients (as given, for instance, by
+`legendre_coeff`) in the three-term recurrence relation for the monic
+orthogonal polynomials `p(0,x)`, `p(1,x)`, `p(2,x)`, ... , that is,
+
+    p(k, x) = (x-a[k]) p(k-1, x) - b[k]² p(k-2, x),    k ≥ 1,
+
+where `p(0, x) = 1` and, by convention, `p(-1, x) = 0` with
+
+              hi
+    b[1]^2 = ∫  w(x) dx.
+             lo
+
+Thus, `p(k, x) = xᵏ + lower degree terms` and
+     
+     hi
+    ∫  p(j, x) p(k, x) w(x) dx = 0 if j ≠ k.
+    lo
+"""
 function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T, 
          a::Array{T,1}, b::Array{T,1}, endpt::EndPt,
          maxits::Integer=maxiterations[T])
-    #
-    # On entry:
-    #
-    # a, b hold the coefficients (as given, for instance, by
-    # legendre_coeff) in the three-term recurrence relation
-    # for the orthonormal polynomials ̂p₀, ̂p₁, ̂p₂, ... , that is,
-    #
-    #    b[k+1] ̂p (x) = (x-a[k]) ̂p   (x) - b[k] ̂p   (x).
-    #            k                k-1            k-2
-    #      
-    # where, by convention
-    #
-    #              / hi
-    #             |
-    #    b[1]^2 = | w(x) dx.
-    #             |
-    #             / lo
-    #
-    # On return:
-    #
-    # x, w hold the points and weights.
-    #
     n = length(a)
     @assert length(b) == n+1
     if endpt == left 
@@ -469,8 +497,8 @@ function modified_chebyshev{T<:AbstractFloat}(
     β = zeros(T, n+1)
     α[1] = a[1] + ν[2]/ν[1]
     β[1] = sqrt(ν[1])
+    σ = zeros(T, 2n, n)
     if n >= 2
-        σ = zeros(T, 2n, n)
         for l = 1:2n
             σ[l,1] = ν[l]
         end

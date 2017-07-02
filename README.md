@@ -1,36 +1,30 @@
 GaussQuadrature.jl
 ==================
 
-Julia package to compute weights and points for the classical Gauss 
-quadrature rules.
+Julia package to compute points and weights for Gauss quadrature rules
+using the Golub-Welsch algorithm.
 
-Handles the Legendre, Chebyshev, Jacobi, Laguerre and Hermite weights, 
-and also provides the Lobatto and Radau variants of the Gauss rules.  
-For example, to obtain a plain 5-point Gauss-Legendre rule do
+Handles the classical Legendre, Chebyshev, Jacobi, Laguerre and Hermite 
+weights, as well as a logarithmic weight function.  In general, the 
+Gauss rule is available for any custom weight function such that the 
+coefficients are known for the three-term recurrence relation satisfied 
+by the associated orthogonal polynomials, or such that appropriate
+modified moments are known.
+
+The Lobatto and Radau variants of all these rules are also provided by
+appropriate choice of the `endpt` argument.
+
+For example, to obtain a plain 5-point Gauss-Legendre rule with weight
+function `w(x)=1` on the interval `-1 < x < -1` do
 
     julia> using GaussQuadrature
     julia> x, w = legendre(5)
 
+whereas for the Lobatto version do
+
+    julia> x, w = legendre(5, both)
+
 Read the initial comments in the src/GaussQuadrature.jl module
 for full details, or read the help documentation for the individual
-functions called legendre, chebyshev, jacobi, laguerre and hermite.  
-
-Changelog: 
-
-2013-10-12 
-Initial release, version 0.1, tested with Julia 0.2 pre-release.
-
-2013-11-01
-Version 0.2, with support for arbitrary FloatingPoint arithmetic.
-Works with Julia 0.3.
-
-2015-09-25
-Version 0.3, remove deprecated features for Julia 0.4, add 
-documentation for individual functions.
-
-2015-10-17
-Version 0.3.1, add basic test for Travis, register package.
-
-2016-07-16 
-Version 0.3.2, change EndPt label type to avoid deprecation warnings
-in Julia 0.5.
+functions called `legendre`, `chebyshev`, `jacobi`, `laguerre`, `hermite`, 
+`logweight` and `custom_gauss_rule`.
