@@ -5,14 +5,16 @@ Julia package to compute points and weights for Gauss quadrature rules
 using the Golub-Welsch algorithm.
 
 Handles the classical Legendre, Chebyshev, Jacobi, Laguerre and Hermite 
-weights, as well as a logarithmic weight function.  In general, the 
+weights, as well as a logarithmic weight function.  In fact, the 
 Gauss rule is available for any custom weight function such that the 
 coefficients are known for the three-term recurrence relation satisfied 
-by the associated orthogonal polynomials, or such that appropriate
-modified moments are known.
+by the associated orthogonal polynomials.  The modified Chebyshev 
+algorithm is provided to determine these coefficients from the modified 
+moments of the weigth function.
 
 The Lobatto and Radau variants of all these rules are also provided by
-appropriate choice of the `endpt` argument.
+appropriate choice of the `endpt` argument: `neither`, `both`, `left` or
+`right`.
 
 For example, to obtain a plain 5-point Gauss-Legendre rule with weight
 function `w(x)=1` on the interval `-1 < x < -1` do

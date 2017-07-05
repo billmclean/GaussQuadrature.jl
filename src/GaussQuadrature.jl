@@ -78,7 +78,7 @@ export laguerre, laguerre_coefs
 export hermite, hermite_coefs
 export shifted_legendre_coefs
 export logweight, logweight_coefs
-export leading_legendre_coef, modified_moments, modified_chebyshev
+export modified_moments, modified_chebyshev
 export custom_gauss_rule, orthonormal_poly
 export special_eigenproblem! 
 
@@ -279,7 +279,7 @@ function hermite_coefs{T<:AbstractFloat}(::Type{T}, n::Integer)
 end
 
 """
-    x, w = logweight(T, n, r, endpt=neither)
+    x, w = logweight(T, n, r=0, endpt=neither)
 
 Returns points `x` and weights `w` for the n-point Gauss rule on
 the interval `0 < x < 1` with weight function
@@ -315,31 +315,16 @@ end
 
 function logweight_coefs{T<:AbstractFloat}(::Type{T}, n::Integer, r::Integer)
     a, b = shifted_legendre_coefs(T, 2n)
-    ν, C = modified_moments(T, n, r)
+    ν = modified_moments(T, n, r)
     α, β, σ = modified_chebyshev(a, b, ν)
     return α, β
 end
 
 function logweight_coefs{T<:AbstractFloat}(n::Integer, ρ::T)
     a, b = shifted_legendre_coefs(T, 2n)
-    ν, C = modified_moments(n, ρ)
+    ν = modified_moments(n, ρ)
     α, β, σ = modified_chebyshev(a, b, ν)
     return α, β
-end
-
-"""
-C = leading_legendre_coef(n)
-
-Returns `C[l+1] = binomial(2l,l)` for `0 ≤ l ≤ n-1`, so that
-`P_l(2x-1) = C[l+1]x^l + ...`
-"""
-function leading_legendre_coef(n)
-    C = zeros(Int64, n)
-    C[1] = 1
-    for l = 1:n-1
-        C[l+1] = div(2(2l-1)*C[l], l)
-    end
-    return C
 end
 
 function modified_moments{T<:AbstractFloat}(::Type{T}, 
@@ -347,44 +332,40 @@ function modified_moments{T<:AbstractFloat}(::Type{T},
     @assert r ≥ 0
     @assert n ≥ 0
     m = min(2n, r+1)
-    C = leading_legendre_coef(m)
     rrp1 = 1 / convert(T, r+1) # reciprocal r+1
-    s = rrp1
-    p = one(T)
+    B = one(T)
+    S = rrp1
     ν = zeros(T, 2n)
-    ν[1] = rrp1 * s
+    ν[1] = rrp1 * S
     for l = 2:m
         j = l - 1
 	rrpj = 1 / convert(T, r + 1 + j)
         rmj = convert(T, r + 1 - j)
 	rrmj = 1 / rmj
-        s +=  rrpj - rrmj
-        p *= rmj * rrpj
-        ν[l] = rrp1 * s * p / C[l]
+        B *= rmj * rrpj
+        S +=  rrpj - rrmj
+        tlm1 = convert(T, 2l-1)
+        ν[l] = rrp1 * B * S * sqrt(tlm1)
     end
     if 2n > r+1
-        l = r + 1
-        rl = 1 / convert(T, l)
-        Crp2 = 2 * (2l-1) * rl * C[r+1] 
         p = one(T)
         for j = 1:r
             p *= j / convert(T, 2(2j+1))
         end
-        ν[r+2] = - p / ( 2(r+1)*Crp2 )
+        ν[r+2] = - sqrt(convert(T, 2r+3)) *p / ( 2(r+1) )
         for l = r+2:2n-1
-            ν[l+1] = - ( ( (l-r-1)/ convert(T, l+r+1) )
-                       * ( l * ν[l] / convert(T, 2(2l-1) ) ) )
+            Tl = convert(T, l)
+            ν[l+1] = - ν[l] * ( (Tl-r-1)/(Tl+r+1) ) * sqrt((2Tl+1)/(2Tl-1) )  
         end
     end
-    return ν, C
+    return ν
 end
 
 function modified_moments{T<:AbstractFloat}(n::Integer, ρ::T)
     @assert ρ > -1 
     @assert n ≥ 0
-    r = (ρ<0) ? 0 : round(Int64, ρ)
+    r = (ρ<0) ? 0 : round(Integer, ρ)
     m = min(2n, r+1)
-    C = leading_legendre_coef(2n)
     S = 1 / ( 1 + ρ )
     B = one(T)
     ν = zeros(T, 2n)
@@ -393,21 +374,23 @@ function modified_moments{T<:AbstractFloat}(n::Integer, ρ::T)
         j = l - 1
         B *= (ρ+1-j) / (ρ+1+j)
 	S += 1 / (ρ+1+j) - 1 / (ρ+1-j)
-        ν[l] = B * S / ( C[l] * (1+ρ) )
+        ν[l] = B * S * sqrt(convert(T,2l-1))
     end
     if 2n > r+1
         l = r + 2
 	j = l - 1
 	X = ( (ρ-r) / (ρ+r+2) - 1 ) / (ρ+r+2)
-	ν[l] = ( B / (1+ρ) ) * ( X + ( (ρ-r)/(ρ+r+2) ) * S ) / C[l]
+        tlm1 = convert(T, 2l-1)
+	ν[l] = ( B / (1+ρ) ) * ( X + ( (ρ-r)/(ρ+r+2) ) * S ) * sqrt(tlm1)
         for l = r+3:2n
 	    j = l - 1
             B *= (ρ+1-j) / (ρ+1+j)
             S += 1 / (ρ+1+j) - 1 / (ρ+1-j)
-	    ν[l] = ( B / (1+ρ) ) * ( X + ( (ρ-r)/(ρ+r+2) ) * S ) / C[l]
+        tlm1 = convert(T, 2l-1)
+	    ν[l] = ( B / (1+ρ) ) * ( X + ( (ρ-r)/(ρ+r+2) ) * S ) * sqrt(tlm1)
         end
     end
-    return ν, C
+    return ν
 end
 
 function shifted_legendre_coefs(T, n)
@@ -486,6 +469,12 @@ function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T,
     return a[idx], w[idx]
 end
 
+"""
+    α, β, σ = modified_chebyshev(a, b, ν)
+
+Implements the modified Chebyshev algorithm described in `doc/notes.tex`
+and used in `logweight_coefs`.
+"""
 function modified_chebyshev{T<:AbstractFloat}(
                   a::Vector{T}, b::Vector{T}, ν::Vector{T})
     m = length(ν) 
@@ -495,26 +484,42 @@ function modified_chebyshev{T<:AbstractFloat}(
     @assert length(b) >= max(1, 2n-1)
     α = zeros(T, n)
     β = zeros(T, n+1)
-    α[1] = a[1] + ν[2]/ν[1]
     β[1] = sqrt(ν[1])
     σ = zeros(T, 2n, n)
+    for l = 1:2n
+        σ[l,1] = ν[l] / β[1]
+    end
+    α[1] = a[1] + b[2] * ( σ[2,1] / σ[1,1] )
     if n >= 2
-        for l = 1:2n
-            σ[l,1] = ν[l]
+        # handle k=1 separately since we have omitted σ[l,0]=0.
+        t = ( 1 + (b[3]/b[2]) * (σ[3,1]/σ[1,1])
+                + ( (a[2]-α[1])/b[2] ) * (σ[2,1]/σ[1,1]) )
+        if t < 0
+            error("modified Chebyshev algorithm failed at k = 1")
         end
+        β[2] = b[2] * sqrt(t)
         for l = 1:2n-2
-            σ[l+1,2] = ( σ[l+2,1] + ( a[l+1] - α[1] ) * σ[l+1,1]
-  	             + b[l+1]^2 * σ[l,1] )
+            σ[l+1,2] = ( (b[l+2]/β[2])*σ[l+2,1] + ((a[l+1]-α[1])/β[2]) * σ[l+1,1]
+  	             + (b[l+1]/β[2]) * σ[l,1] )
         end
-        α[2] = a[2] + σ[3,2] / σ[2,2] - σ[2,1] / σ[1,1]
-        β[2] = sqrt(σ[2,2] / σ[1,1])
+        α[2] = a[2] + b[3] * (σ[3,2]/σ[2,2]) - β[2] * (σ[2,1]/σ[2,2])
+        # general k
         for k = 2:n-1
-            for l = k:2n-k-1
-                σ[l+1,k+1] = ( σ[l+2,k] + ( a[l+1] - α[k] ) * σ[l+1,k]
-                         + b[l+1]^2 * σ[l,k] - β[k]^2 * σ[l+1,k-1] )
+            t = ( 1 + (b[k+2]/b[k+1]) * (σ[k+2,k]/σ[k,k])
+                    + ( (a[k+1]-α[k])/b[k+1] ) * (σ[k+1,k]/σ[k,k])
+                    - (β[k]/b[k+1]) * (σ[k+1,k-1]/σ[k,k]) )
+            β[k+1] = b[k+1] * sqrt(t)
+            if t < 0
+                error("modified Chebyshev algorithm failed at k = $k")
             end
-	    α[k+1] = a[k+1] + σ[k+2,k+1] / σ[k+1,k+1] - σ[k+1,k] / σ[k,k]
-	    β[k+1] = sqrt(σ[k+1,k+1] / σ[k,k])
+            for l = k:2n-k-1
+                σ[l+1,k+1] = ( (b[l+2]/β[k+1]) * σ[l+2,k] 
+                             + ( (a[l+1]-α[k])/β[k+1] ) * σ[l+1,k]
+                             + (b[l+1]/β[k+1]) * σ[l,k] 
+                             - (β[k]/β[k+1]) * σ[l+1,k-1] )
+            end
+	    α[k+1] = ( a[k+1] + b[k+2] * (σ[k+2,k+1]/σ[k+1,k+1]) 
+                              - β[k+1] * (σ[k+1,k]/σ[k+1,k+1]) )
         end
     end
     return α, β, σ

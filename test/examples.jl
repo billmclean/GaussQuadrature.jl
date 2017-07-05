@@ -1,6 +1,8 @@
 using GaussQuadrature
 
-T = BigFloat
+#T = Float32
+T = Float64
+#T = BigFloat
 
 print("\nFloating point data type is ", T, '\n')
 @printf("\teps = %0.2e\n\n", eps(T))
@@ -10,17 +12,20 @@ npts = Dict(
                       "Chebyshev" => 10,
                       "Jacobi"    => 10,
                       "Laguerre"  => 10,
-                      "Hermite"   => 10 ),
+                      "Hermite"   => 10,
+                      "Logweight" => 10 ),
     Float64 => Dict(  "Legendre"  => 20, 
                       "Chebyshev" => 12,
                       "Jacobi"    => 12,
                       "Laguerre"  => 20,
-                      "Hermite"   => 16 ),
+                      "Hermite"   => 16,
+                      "Logweight" => 16 ),
     BigFloat => Dict( "Legendre" => 100, 
                       "Chebyshev" => 60,
                       "Jacobi"    => 60,
                       "Laguerre"  => 600,
-                      "Hermite"   => 80 )
+                      "Hermite"   => 80,
+                      "Logweight" => 70 )
 )
 
 const half = one(T) / 2
@@ -75,6 +80,12 @@ laguerreintegral{T}(alpha::T) = Beta(one(T), 1+alpha)
 
 hermiteintegral{T}(a::T) = sqrt(convert(T, pi)) * exp(a^2)
 
+function logweightintegral{T}(::Type{T})
+    three = convert(T, 3)
+    return (π/three)^2 * 2sqrt(three)
+end
+
+
 endpts = [neither, left, right, both]
 table(legendrefunc, (n, endpt) -> legendre(T, n, endpt), 
       "Legendre", convert(T, pi)/2, npts[T]["Legendre"], endpts)
@@ -102,3 +113,6 @@ a = convert(T, 6) / 5
 table(x -> exp(2*a*x), (n, endpt) -> hermite(T, n), "Hermite",
       hermiteintegral(a), npts[T]["Hermite"], [neither])
 
+half = convert(T, 1//2)
+table(x -> (1-x^2)/(1+x^3), (n, endpt) -> logweight(n, -half, endpt), "Logweight",
+      logweightintegral(T), npts[T]["Logweight"], endpts)
