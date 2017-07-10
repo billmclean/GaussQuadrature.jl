@@ -35,8 +35,8 @@ module GaussQuadrature
 # Laguerre                  0 < x < ∞     xᵅ exp(-x)
 # Hermite                  -∞ < x < ∞      exp(-x²)
 #
-# In addition to these classical rules, logarithmic weights of the
-# form
+# In addition to these classical rules, the module generates Gauss rules
+# for logarithmic weights of the form
 #
 #    w(x) = x^ρ log(1/x)   for 0 < x < 1.
 #
@@ -139,7 +139,7 @@ end
 Returns points `x` and weights `w` for the `n`-point Gauss-Chebyshev rule
 for the interval `-1 < x < 1` with weight function
 
-    w(x) = 1 / sqrt{1-x²}   if kind=1
+    w(x) = 1 / sqrt(1-x²)   if kind=1
     w(x) = sqrt(1-x²)       if kind=2.
 
 Use `endpt=left`, `right` or `both` for the left Radau, right Radau or
@@ -158,8 +158,8 @@ Convenience function with type `T = Float64`:
     x, w = chebyshev(n, kind=1, endpt=neither)
 
 """
-chebyshev(n, kind=1, endpt=neither) = chebyshev(Float64, n, kind, 
-                                                endpt)
+chebyshev(n, kind=1, endpt=neither) = chebyshev(Float64, n, kind, endpt)
+
 function chebyshev_coefs{T<:AbstractFloat}(::Type{T},
                         n::Integer, kind::Integer)
     half = convert(T, 1//2)
@@ -226,8 +226,7 @@ for the interval `0 < x < ∞` with weight function
 
 Use `endpt=left` for the left Radau rule.
 """
-function laguerre{T<:AbstractFloat}(n::Integer, α::T, 
-                                    endpt::EndPt=neither)
+function laguerre{T<:AbstractFloat}(n::Integer, α::T, endpt::EndPt=neither)
     @assert n ≥ 1
     @assert α > -1.0
     @assert endpt in [neither, left]
@@ -302,7 +301,7 @@ Convenience function with type `T = Float64`:
 logweight(n, r=0, endpt=neither) = logweight(Float64, n, r, endpt)
 
 """
-Alternative version with `w(x) = x^ρ log(1/x)` for real `ρ > -1`:
+More general method works when `w(x) = x^ρ log(1/x)` for real `ρ > -1`:
 
     x, w = logweight(n, ρ, endpt=neither)
 """

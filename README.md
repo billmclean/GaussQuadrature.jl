@@ -10,11 +10,11 @@ Gauss rule is available for any custom weight function such that the
 coefficients are known for the three-term recurrence relation satisfied 
 by the associated orthogonal polynomials.  The modified Chebyshev 
 algorithm is provided to determine these coefficients from the modified 
-moments of the weigth function.
+moments of the weight function.
 
 The Lobatto and Radau variants of all these rules are also provided by
-appropriate choice of the `endpt` argument: `neither`, `both`, `left` or
-`right`.
+appropriate choice of the `endpt` argument: `neither` (the default), 
+`both`, `left` or `right`.
 
 For example, to obtain a plain 5-point Gauss-Legendre rule with weight
 function `w(x)=1` on the interval `-1 < x < -1` do
