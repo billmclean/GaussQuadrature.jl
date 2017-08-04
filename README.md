@@ -26,6 +26,13 @@ whereas for the Lobatto version do
 
     julia> x, w = legendre(5, both)
 
+The package supports `BigFloat`s; for example,
+
+    julia> x, w = legendre(BigFloat, 5)
+
+gives a plain 5-point Gauss-Legendre rule accurate to about 75 significant
+figures.
+
 Read the initial comments in the src/GaussQuadrature.jl module
 for full details, or read the help documentation for the individual
 functions called `legendre`, `chebyshev`, `jacobi`, `laguerre`, `hermite`, 
