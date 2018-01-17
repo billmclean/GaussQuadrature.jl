@@ -1,5 +1,6 @@
 using GaussQuadrature
-using Base.Test
+using SpecialFunctions: besseli
+using Test
 
 include("test_eigen.jl")
 include("test_legendre.jl")

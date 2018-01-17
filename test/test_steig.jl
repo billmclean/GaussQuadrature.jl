@@ -1,9 +1,9 @@
-
 using GaussQuadrature
+using Printf
 
 T = Float64
 
-print("\nFloating point data type is ", T, '\n')
+println("\nFloating point data type is ", T)
 @printf("\teps = %0.2e\n\n", eps(T))
 
 n = 10

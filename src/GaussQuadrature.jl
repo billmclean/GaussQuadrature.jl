@@ -85,7 +85,7 @@ export special_eigenproblem!
 # Enumeration type used to specify which endpoints of the integration
 # interval should be included amongst the quadrature points: neither,
 # left, right or both.
-immutable EndPt
+struct EndPt
     label :: Char
 end
 
@@ -94,7 +94,7 @@ const left    = EndPt('L')
 const right   = EndPt('R')
 const both    = EndPt('B')
 
-include("to_be_removed.jl")
+#include("to_be_removed.jl")
 
 # Maximum number of QL iterations used by steig!.
 # You might need to increase this.
@@ -109,8 +109,8 @@ for the interval `-1 < x < 1` with weight function `w(x) = 1`.
 Use `endpt=left`, `right` or `both` for the left Radau, right Radau or
 Lobatto rules, respectively.
 """
-function legendre{T<:AbstractFloat}(::Type{T}, 
-                 n::Integer, endpt::EndPt=neither)
+function legendre(::Type{T}, n::Integer, 
+                  endpt::EndPt=neither) where {T<:AbstractFloat}
     @assert n ≥ 1
     a, b = legendre_coefs(T, n)
     return custom_gauss_rule(-one(T), one(T), a, b, endpt)
@@ -123,7 +123,7 @@ Convenience function with type `T = Float64`:
 """
 legendre(n, endpt=neither) = legendre(Float64, n, endpt)
 
-function legendre_coefs{T<:AbstractFloat}(::Type{T}, n::Integer)
+function legendre_coefs(::Type{T}, n::Integer) where {T<:AbstractFloat}
     a = zeros(T, n)
     b = zeros(T, n+1)
     b[1] = sqrt(convert(T, 2))
@@ -145,8 +145,8 @@ for the interval `-1 < x < 1` with weight function
 Use `endpt=left`, `right` or `both` for the left Radau, right Radau or
 Lobatto rules, respectively.
 """
-function chebyshev{T<:AbstractFloat}(::Type{T},
-                  n::Integer, kind::Integer=1, endpt::EndPt=neither)
+function chebyshev(::Type{T}, n::Integer, kind::Integer=1, 
+                   endpt::EndPt=neither) where {T<:AbstractFloat}
     @assert n ≥ 1
     a, b = chebyshev_coefs(T, n, kind)
     return custom_gauss_rule(-one(T), one(T), a, b, endpt)
@@ -160,8 +160,8 @@ Convenience function with type `T = Float64`:
 """
 chebyshev(n, kind=1, endpt=neither) = chebyshev(Float64, n, kind, endpt)
 
-function chebyshev_coefs{T<:AbstractFloat}(::Type{T},
-                        n::Integer, kind::Integer)
+function chebyshev_coefs(::Type{T}, n::Integer, 
+                         kind::Integer) where {T<:AbstractFloat}
     half = convert(T, 1//2)
     a = zeros(T, n)
     b = fill(half, n+1)
@@ -189,15 +189,15 @@ for the interval `-1 < x < 1` with weight function
 Use `endpt=left`, `right` or `both` for the left Radau, right Radau or
 Lobatto rules, respectively.
 """
-function jacobi{T<:AbstractFloat}(n::Integer, α::T, β::T, 
-                                  endpt::EndPt=neither)
+function jacobi(n::Integer, α::T, β::T, 
+                endpt::EndPt=neither) where {T<:AbstractFloat}
     @assert n ≥ 1
     @assert α > -1.0 && β > -1.0
     a, b = jacobi_coefs(n, α, β)
     custom_gauss_rule(-one(T), one(T), a, b, endpt)
 end
 
-function jacobi_coefs{T<:AbstractFloat}(n::Integer, α::T, β::T)
+function jacobi_coefs(n::Integer, α::T, β::T) where {T<:AbstractFloat}
     a = zeros(T, n)
     b = zeros(T, n+1)
     ab = α + β
@@ -226,7 +226,8 @@ for the interval `0 < x < ∞` with weight function
 
 Use `endpt=left` for the left Radau rule.
 """
-function laguerre{T<:AbstractFloat}(n::Integer, α::T, endpt::EndPt=neither)
+function laguerre(n::Integer, α::T, 
+                  endpt::EndPt=neither) where {T<:AbstractFloat}
     @assert n ≥ 1
     @assert α > -1.0
     @assert endpt in [neither, left]
@@ -234,7 +235,7 @@ function laguerre{T<:AbstractFloat}(n::Integer, α::T, endpt::EndPt=neither)
     custom_gauss_rule(zero(T), convert(T, Inf), a, b, endpt)
 end
 
-function laguerre_coefs{T<:AbstractFloat}(n::Integer, α::T)
+function laguerre_coefs(n::Integer, α::T) where {T<:AbstractFloat}
     a = zeros(T, n)
     b = zeros(T, n+1)
     b[1] = sqrt(gamma(α+1))
@@ -253,7 +254,7 @@ for the interval `-∞ < x < ∞` with weight function
 
     w(x) = exp(-x²).
 """
-function hermite{T<:AbstractFloat}(::Type{T}, n::Integer)
+function hermite(::Type{T}, n::Integer) where {T<:AbstractFloat}
     @assert n ≥ 1
     a, b = hermite_coefs(T, n)
     custom_gauss_rule(convert(T, -Inf), convert(T, Inf), a, b, neither)
@@ -266,7 +267,7 @@ Convenience function with type `T = Float64`:
 """
 hermite(n) = hermite(Float64, n)
 
-function hermite_coefs{T<:AbstractFloat}(::Type{T}, n::Integer)
+function hermite_coefs(::Type{T}, n::Integer) where {T<:AbstractFloat}
     a = zeros(T, n)
     b = zeros(T, n+1)
     b[1] = sqrt(sqrt(convert(T, pi)))
@@ -285,8 +286,8 @@ the interval `0 < x < 1` with weight function
 
     w(x) = xʳ log(1/x),    r ≥ 0.
 """
-function logweight{T<:AbstractFloat}(::Type{T}, n::Integer, r::Integer, 
-                                     endpt::EndPt=neither)
+function logweight(::Type{T}, n::Integer, r::Integer, 
+                   endpt::EndPt=neither) where {T<:AbstractFloat}
     @assert n ≥ 1
     @assert r ≥ 0
     α, β = logweight_coefs(T, n, r)
@@ -305,29 +306,31 @@ More general method works when `w(x) = x^ρ log(1/x)` for real `ρ > -1`:
 
     x, w = logweight(n, ρ, endpt=neither)
 """
-function logweight{T<:AbstractFloat}(n::Integer, ρ::T, endpt::EndPt=neither)
+function logweight(n::Integer, ρ::T, 
+                   endpt::EndPt=neither) where {T<:AbstractFloat}
     @assert n ≥ 1
     @assert ρ > -1
     α, β = logweight_coefs(n, ρ)
     custom_gauss_rule(zero(T), one(T), α, β, endpt)
 end
 
-function logweight_coefs{T<:AbstractFloat}(::Type{T}, n::Integer, r::Integer)
+function logweight_coefs(::Type{T}, n::Integer, 
+                         r::Integer) where {T<:AbstractFloat}
     a, b = shifted_legendre_coefs(T, 2n)
     ν = modified_moments(T, n, r)
     α, β, σ = modified_chebyshev(a, b, ν)
     return α, β
 end
 
-function logweight_coefs{T<:AbstractFloat}(n::Integer, ρ::T)
+function logweight_coefs(n::Integer, ρ::T) where {T<:AbstractFloat}
     a, b = shifted_legendre_coefs(T, 2n)
     ν = modified_moments(n, ρ)
     α, β, σ = modified_chebyshev(a, b, ν)
     return α, β
 end
 
-function modified_moments{T<:AbstractFloat}(::Type{T}, 
-                         n::Integer, r::Integer)
+function modified_moments(::Type{T}, n::Integer, 
+                          r::Integer) where {T<:AbstractFloat}
     @assert r ≥ 0
     @assert n ≥ 0
     m = min(2n, r+1)
@@ -360,7 +363,7 @@ function modified_moments{T<:AbstractFloat}(::Type{T},
     return ν
 end
 
-function modified_moments{T<:AbstractFloat}(n::Integer, ρ::T)
+function modified_moments(n::Integer, ρ::T) where {T<:AbstractFloat}
     @assert ρ > -1 
     @assert n ≥ 0
     r = (ρ<0) ? 0 : round(Integer, ρ)
@@ -427,9 +430,9 @@ Thus, `p(k, x) = xᵏ + lower degree terms` and
     ∫  p(j, x) p(k, x) w(x) dx = 0 if j ≠ k.
     lo
 """
-function custom_gauss_rule{T<:AbstractFloat}(lo::T, hi::T, 
-         a::Array{T,1}, b::Array{T,1}, endpt::EndPt,
-         maxits::Integer=maxiterations[T])
+function custom_gauss_rule(lo::T, hi::T, 
+             a::Array{T,1}, b::Array{T,1}, endpt::EndPt, 
+             maxits::Integer=maxiterations[T]) where {T<:AbstractFloat}
     n = length(a)
     @assert length(b) == n+1
     if endpt == left 
@@ -474,8 +477,8 @@ end
 Implements the modified Chebyshev algorithm described in `doc/notes.tex`
 and used in `logweight_coefs`.
 """
-function modified_chebyshev{T<:AbstractFloat}(
-                  a::Vector{T}, b::Vector{T}, ν::Vector{T})
+function modified_chebyshev(a::Vector{T}, b::Vector{T}, 
+                            ν::Vector{T}) where {T<:AbstractFloat}
     m = length(ν) 
     @assert m % 2 == 0 && m >= 2
     n = div(m, 2)
@@ -498,8 +501,9 @@ function modified_chebyshev{T<:AbstractFloat}(
         end
         β[2] = b[2] * sqrt(t)
         for l = 1:2n-2
-            σ[l+1,2] = ( (b[l+2]/β[2])*σ[l+2,1] + ((a[l+1]-α[1])/β[2]) * σ[l+1,1]
-  	             + (b[l+1]/β[2]) * σ[l,1] )
+            σ[l+1,2] = ( (b[l+2]/β[2])*σ[l+2,1] 
+                       + ((a[l+1]-α[1])/β[2]) * σ[l+1,1]
+  	               + (b[l+1]/β[2]) * σ[l,1] )
         end
         α[2] = a[2] + b[3] * (σ[3,2]/σ[2,2]) - β[2] * (σ[2,1]/σ[2,2])
         # general k
@@ -524,8 +528,8 @@ function modified_chebyshev{T<:AbstractFloat}(
     return α, β, σ
 end
 
-function solve{T<:AbstractFloat}(n::Integer, shift::T, 
-                                 a::Array{T,1}, b::Array{T,1})
+function solve(n::Integer, shift::T, a::Array{T,1}, 
+               b::Array{T,1}) where {T<:AbstractFloat}
     #
     # Perform elimination to find the nth component s = delta[n]
     # of the solution to the nxn linear system
@@ -543,8 +547,8 @@ function solve{T<:AbstractFloat}(n::Integer, shift::T,
     return one(t) / t
 end
 
-function special_eigenproblem!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1}, 
-                               z::Array{T,1}, maxits::Integer)
+function special_eigenproblem!(d::Array{T,1}, e::Array{T,1}, z::Array{T,1}, 
+                               maxits::Integer) where {T<:AbstractFloat}
     #
     # Finds the eigenvalues and first components of the normalised
     # eigenvectors of a symmetric tridiagonal matrix by the implicit
@@ -592,8 +596,8 @@ function special_eigenproblem!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1},
                 continue
             end
             if j == maxits
-                msg = @sprintf("No convergence after %d iterations", j)
-                msg *= " (try increasing maxits)"
+                msg = string("No convergence after ", j, " iterations",
+                             " (try increasing maxits)")
                 error(msg)
             end
             # Form shift
@@ -636,8 +640,8 @@ function special_eigenproblem!{T<:AbstractFloat}(d::Array{T,1}, e::Array{T,1},
     end # loop over l
 end
 
-function orthonormal_poly{T<:AbstractFloat}(x::Array{T,1}, 
-                         a::Array{T,1}, b::Array{T,1})
+function orthonormal_poly(x::Array{T,1}, a::Array{T,1}, 
+                          b::Array{T,1}) where {T<:AbstractFloat}
     # p[i,j] = value at x[i] of orthonormal polynomial of degree j-1.
     m = length(x)
     n = length(a)

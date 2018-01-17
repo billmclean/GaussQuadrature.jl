@@ -1,11 +1,12 @@
 using GaussQuadrature
+using Printf
 
 #T = Float32
 T = Float64
 #T = BigFloat
 
-print("\nFloating point data type is ", T, '\n')
-@printf("\teps = %0.2e\n\n", eps(T))
+println("\nFloating point data type is ", T)
+println("\teps = ", eps(T))
 
 npts = Dict( 
     Float32 => Dict(  "Legendre"  => 10, 
@@ -44,7 +45,7 @@ function variant(endpt)
     end
 end
 
-function table{T}(f, rule, name, ans::T, n::Integer, endpts)
+function table(f, rule, name, ans::T, n::Integer, endpts) where {T}
     println("\nTesting ", name, " rule with ", n, " points:")
     for endpt in endpts
         x, w = rule(n, endpt)
@@ -57,17 +58,17 @@ function table{T}(f, rule, name, ans::T, n::Integer, endpts)
     end
 end
 
-Beta{T}(x::T, y::T) = gamma(x) * gamma(y) / gamma(x+y)
+Beta(x::T, y::T) where {T} = gamma(x) * gamma(y) / gamma(x+y)
 
-legendrefunc{T}(x::T) = one(T) / ( one(T) + x^2 )
+legendrefunc(x::T)  where {T} = one(T) / ( one(T) + x^2 )
 
-jacobifunc{T}(x::T, c::T, alpha::T, beta::T) = (
+jacobifunc(x::T, c::T, alpha::T, beta::T) where {T} = (
              (x+c)^convert(T,-alpha-beta-2) )
 
-jacobiintegral{T}(alpha::T, beta::T, c::T) = ( 2^(alpha+beta+1)
+jacobiintegral(alpha::T, beta::T, c::T) where {T} = ( 2^(alpha+beta+1)
       * Beta(1+alpha,1+beta) / ( (c-1)^(1+alpha) * (c+1)^(1+beta) ) )
 
-function laguerrefunc{T}(x::T, alpha::T)
+function laguerrefunc(x::T, alpha::T) where {T}
     if x > eps(T)
         r = -expm1(-x) / x
     else
@@ -76,11 +77,11 @@ function laguerrefunc{T}(x::T, alpha::T)
     return r^alpha
 end
 
-laguerreintegral{T}(alpha::T) = Beta(one(T), 1+alpha)
+laguerreintegral(alpha::T) where {T} = Beta(one(T), 1+alpha)
 
-hermiteintegral{T}(a::T) = sqrt(convert(T, pi)) * exp(a^2)
+hermiteintegral(a::T) where {T} = sqrt(convert(T, pi)) * exp(a^2)
 
-function logweightintegral{T}(::Type{T})
+function logweightintegral(::Type{T}) where {T} 
     three = convert(T, 3)
     return (π/three)^2 * 2sqrt(three)
 end
@@ -114,5 +115,5 @@ table(x -> exp(2*a*x), (n, endpt) -> hermite(T, n), "Hermite",
       hermiteintegral(a), npts[T]["Hermite"], [neither])
 
 half = convert(T, 1//2)
-table(x -> (1-x^2)/(1+x^3), (n, endpt) -> logweight(n, -half, endpt), "Logweight",
-      logweightintegral(T), npts[T]["Logweight"], endpts)
+table(x -> (1-x^2)/(1+x^3), (n, endpt) -> logweight(n, -half, endpt), 
+      "Logweight", logweightintegral(T), npts[T]["Logweight"], endpts)
