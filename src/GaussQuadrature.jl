@@ -1,5 +1,7 @@
 module GaussQuadrature
 
+using SpecialFunctions: lgamma
+
 # October 2013 by Bill McLean, School of Maths and Stats,
 # The University of New South Wales.
 #
