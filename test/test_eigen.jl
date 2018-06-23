@@ -1,9 +1,10 @@
+using LinearAlgebra
 
 const n = 8
 a, b = legendre_coefs(Float64, n)
 
 Tn = SymTridiagonal(copy(a), b[2:n])
-F = eigfact(Tn)
+F = eigen(Tn)
 
 v = zeros(n)
 special_eigenproblem!(a, b, v, 30)

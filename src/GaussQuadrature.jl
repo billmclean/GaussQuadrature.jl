@@ -575,7 +575,7 @@ function special_eigenproblem!(d::Array{T,1}, e::Array{T,1}, z::Array{T,1},
     #
     n = length(z)
     z[1] = one(T) 
-    z[2:n] = zero(T) 
+    z[2:n] .= zero(T) 
     e[n+1] = zero(T)
 
     if n == 1 # Nothing to do for a 1x1 matrix.
