@@ -3,7 +3,8 @@
 using GaussQuadrature
 using Printf
 
-T = BigFloat
+#T = BigFloat
+T = Float64
 println("\nFloating point type data type is ", T)
 println("\teps = ", eps(T))
 

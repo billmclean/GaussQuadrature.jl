@@ -1,4 +1,5 @@
 using GaussQuadrature
+using SpecialFunctions
 using Printf
 
 #T = Float32

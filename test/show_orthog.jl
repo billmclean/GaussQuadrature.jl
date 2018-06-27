@@ -1,7 +1,8 @@
 using GaussQuadrature
 using PyPlot
 
-x = collect(linspace(0, 1, 201))
+#x = collect(range(0; stop=1, length=201))
+x = range(0; stop=1, length=201)
 const n = 5
 
 a, b = shifted_legendre_coefs(Float64, n)
