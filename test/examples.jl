@@ -1,5 +1,5 @@
 using GaussQuadrature
-using SpecialFunctions
+using SpecialFunctions: gamma
 using Printf
 
 #T = Float32
