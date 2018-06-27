@@ -1,5 +1,7 @@
 module GaussQuadrature
 
+using SpecialFunctions: gamma, lgamma
+
 # October 2013 by Bill McLean, School of Maths and Stats,
 # The University of New South Wales.
 #
@@ -640,8 +642,8 @@ function special_eigenproblem!(d::Array{T,1}, e::Array{T,1}, z::Array{T,1},
     end # loop over l
 end
 
-function orthonormal_poly(x::Array{T,1}, a::Array{T,1}, 
-                          b::Array{T,1}) where {T<:AbstractFloat}
+function orthonormal_poly(x::AbstractVector{T}, a::AbstractVector{T}, 
+                          b::AbstractVector{T}) where {T<:AbstractFloat}
     # p[i,j] = value at x[i] of orthonormal polynomial of degree j-1.
     m = length(x)
     n = length(a)
