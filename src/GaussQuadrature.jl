@@ -1,6 +1,6 @@
 module GaussQuadrature
 
-using SpecialFunctions: gamma, lgamma
+using SpecialFunctions: gamma, loggamma
 
 # October 2013 by Bill McLean, School of Maths and Stats,
 # The University of New South Wales.
@@ -205,7 +205,7 @@ function jacobi_coefs(n::Integer, α::T, β::T) where {T<:AbstractFloat}
     ab = α + β
     abi = ab + 2
     b[1] = 2^((ab+1)/2) * exp(
-             ( lgamma(α+1) + lgamma(β+1) - lgamma(abi) )/2 )
+             ( loggamma(α+1) + loggamma(β+1) - loggamma(abi) )/2 )
     a[1] = ( β - α ) / abi
     b[2] = sqrt( 4*(α+1)*(β+1) / ( (ab+3)*abi*abi ) )
     a2b2 = β*β - α*α
