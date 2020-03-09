@@ -7,7 +7,8 @@ author = ["William McLean <w.mclean@unsw.edu.au>"]
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
-julia = "≥ 0.7.0"
+julia = "1.0.5"
+SpecialFunctions = "0.7.2"
 
 [extras]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
