@@ -467,7 +467,8 @@ function custom_gauss_rule(lo::T, hi::T,
     # Ensure end point values are exact.
     if endpt in (left, both)
         a[idx[1]] = lo
-    elseif endpt in (right, both)
+    end
+    if endpt in (right, both)
         a[idx[n]] = hi 
     end
     return a[idx], w[idx]
