@@ -650,17 +650,23 @@ function orthonormal_poly(x::AbstractVector{T}, a::AbstractVector{T},
     n = length(a)
     p = zeros(T, m, n+1)
     rb1 = one(T) / b[1]
+    if n == 0
+        for i = 1:m
+            p[i,1] = rb1
+        end
+        return p
+    end
     rb2 = one(T) / b[2]
     for i = 1:m
         p[i,1] = rb1
         p[i,2] = rb2 * ( x[i] - a[1] ) * p[i,1]
     end 
     for j = 2:n
-       rb = one(T) / b[j+1]
-       for i = 1:m
-           p[i,j+1] = rb * ( (x[i]-a[j]) * p[i,j] 
-                                - b[j] * p[i,j-1] )
-       end
+        rb = one(T) / b[j+1]
+        for i = 1:m
+            p[i,j+1] = rb * ( (x[i]-a[j]) * p[i,j]
+                              - b[j] * p[i,j-1] )
+        end
     end
     return p
 end
