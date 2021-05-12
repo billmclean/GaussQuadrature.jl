@@ -1,7 +1,7 @@
 name = "GaussQuadrature"
 uuid = "d54b0c1a-921d-58e0-8e36-89d8069c0969"
 author = ["William McLean <w.mclean@unsw.edu.au>"]
-version = "0.5.6"
+version = "0.5.7"
 
 [deps]
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
