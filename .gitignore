@@ -7,3 +7,4 @@
 *.blg
 *.out
 Manifest.toml
+.DS_Store
