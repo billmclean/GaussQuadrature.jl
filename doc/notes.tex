@@ -1,7 +1,9 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage{amsmath,amsthm,amsfonts,tikz}
+\usepackage[margin=2cm]{geometry}
 \usepackage[euler-digits]{eulervm}
 \usepackage{hyperref}
+\usepackage[capitalize]{cleveref}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}[theorem]{Corollary}
@@ -9,6 +11,8 @@
 \newcommand{\vecp}[1]{\boldsymbol{p}}
 \newcommand{\hatvecp}{\hat{\boldsymbol{p}}}
 \newcommand{\Poly}{\mathbb{P}}
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+\newcommand{\vecspan}{\operatorname{span}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Notes on Gauss Quadrature for General Weight Functions}
 \author{Bill McLean}
@@ -337,7 +341,7 @@ T_n\hatvecp_n(x)+b_{n+1}\hat p_n(x)\boldsymbol{e}_n=x\hatvecp_n(x).
 The points~$x_j$ and weights~$w_j$ may be computed by solving an 
 eigenproblem for the \emph{Jacobi matrix}~$T_n$.
 
-\begin{theorem}
+\begin{theorem}\label{thm: Jacobi eigenproblem}
 The eigenvalues of~$T_n$ are the points $x_1$, $x_2$, \dots, $x_n$
 of the associated Gauss quadrature rule.  Moreover, for~$1\le j\le n$,
 if
@@ -811,6 +815,436 @@ or equivalently,
 \nu_{l+1}=-\nu_l\times\frac{l-r-1}{l+r+1}\,\sqrt{\frac{2l+1}{2l-1}}
 	\quad\text{for $l\ge r+2$.}
 \]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Francis QR-algorithm}
+\cref{thm: Jacobi eigenproblem} leads us to consider the problem of computing 
+the eigenpairs of the Jacobi matrix, or, in general, of any symmetric 
+tridiagonal matrix
+\[
+\bs{A}=\begin{bmatrix}
+a_1&b_2   &       &       &\\
+b_2&a_2   &b_3    &       &\\
+   &\ddots&\ddots &\ddots &\\
+   &      &b_{n-1}&a_{n-1}&b_n\\
+   &      &       &b_n    &a_n
+\end{bmatrix}.
+\]
+Such a matrix~$\bs{A}$ is said to be \emph{unreduced} if
+\[
+b_j\ne0\quad\text{for $1\le j\le n-1$.}
+\]
+Otherwise, if say $b_{j^*}=0$ for some $j^*$, then $\bs{A}$ has the block 
+structure
+\[
+\bs{A}=\left[\begin{array}{c|c}
+\bs{A}_{11}&\bs{0}\\
+\hline
+\bs{0}&\bs{A}_{22}\end{array}\right],
+\]
+where $\bs{A}_{11}\in\mathbb{R}^{j^*\times j^*}$~and
+$\bs{A}_{22}\in\mathbb{R}^{(n-j^*)\times(n-j^*)}$ are symmetric and tridiagonal.
+Thus, our $n$-dimensional eigenproblem decomposes into two independent
+eigenproblems of dimension $j^*$~and $n-j^*$.
+
+If more entries of~$\bs{b}$ are zero, then we can decompose further until
+$\bs{A}$ is a block diagonal matrix with all blocks unreduced.  Thus, it
+suffices to consider the unreduced case.
+
+\begin{theorem}\label{thm: implicit Q}
+Suppose that $\bs{A}$ and $\bs{B}$ be unreduced
+symmetric tridiagonal matrices related by $\bs{B}=\bs{Q}^\top\bs{A}\bs{Q}$ for
+an orthogonal
+matrix~$\bs{Q}=\begin{bmatrix}\bs{q}_1&\bs{q}_2&\cdots&\bs{q}_n\end{bmatrix}$.
+Let $1\le k\le n$, define
+\[
+S_0=\vecspan\{\bs{e}_1,\bs{e}_2,\ldots,\bs{e}_k\}
+\]
+and perform one step of subspace iteration with shift~$\mu$ to generate
+\[
+S_1=\vecspan\{\,\bs{A}\bs{x}:\bs{x}\in S_0\,\}.
+\]
+If the first column of $\bs{A}$ is a non-zero multiple of~$\bs{q}_1$,
+say
+\[
+\bs{A}\bs{e}_1=\beta\bs{q}_1\quad\text{with $\beta\ne0$,}
+\]
+then
+\[
+S_1=\vecspan\{\bs{q}_1,\bs{q}_2,\ldots,\bs{q}_k\}.
+\]
+Thus, the first $k$ columns of $\bs{Q}$ form an orthonormal basis for~$S_1$.
+\end{theorem}
+
+Since the index~$k$ is arbitrary in \cref{thm: implicit Q}, we have
+\[
+\bs{A}\bs{e}_j\in\vecspan\{\bs{q}_1,\bs{q}_2,\ldots,\bs{q}_j\},
+\]
+implying that, for some~$r_{ij}$,
+\[
+\bs{A}\bs{e}_j=\sum_{i=1}^jr_{ij}\bs{q}_i\quad\text{for $1\le j\le n$,}
+\]
+which means that $\bs{A}=\bs{Q}\bs{R}$ is the QR-factorisation of~$\bs{A}$ and
+that $\bs{B}=\bs{Q}^\top\bs{Q}\bs{R}\bs{Q}=\bs{R}\bs{Q}$.  In other words, we
+obtain $\bs{B}$ from~$\bs{A}$ by performing one step of the QR-iteration.
+
+To see how we can compute $\bs{B}$~and $\bs{Q}$ without explicitly
+finding~$\bs{R}$, let $n=6$ so that
+\[
+\boldsymbol{A}=\begin{bmatrix}
+a_1&b_1&   &   &   &   \\
+b_1&a_2&b_2&   &   &   \\
+   &b_2&a_3&b_3&   &   \\
+   &   &b_3&a_4&b_4&   \\
+   &   &   &b_4&a_5&b_5\\
+   &   &   &   &b_5&a_6\end{bmatrix}.
+\]
+We construct a Householder transformation
+$\boldsymbol{H}_1=\boldsymbol{I}-\tau_1\boldsymbol{u}_1\boldsymbol{u}_1^\top$
+such that
+\[
+\boldsymbol{H}_1\boldsymbol{x}=\|\boldsymbol{x}\|\boldsymbol{e}_1
+\quad\text{where}\quad\boldsymbol{x}
+      =\boldsymbol{A}\boldsymbol{e}_1.
+\]
+Since the first column of $\boldsymbol{A}$ has zeros in rows $3$~to $6$, we see
+that
+\[
+\boldsymbol{u}_1=\begin{bmatrix}1\\ \times\\ 0\\ 0\\ 0\\ 0\end{bmatrix}
+\qquad\text{and}\qquad
+\boldsymbol{u}_1^\top\boldsymbol{A}=\begin{bmatrix}
+\times&\times&\times&0&0&0\end{bmatrix}
+\]
+so, using $+$ to indicate entries that might have changed,
+\[
+\boldsymbol{H}_1\boldsymbol{A}
+=\boldsymbol{A}-\tau_1\boldsymbol{u}_1(\boldsymbol{u}_1^\top\boldsymbol{A})
+      =\begin{bmatrix}
++&     +&     +&      &      &      \\
+ &     +&     +&      &      &      \\
+ &\times&\times&\times&      &      \\
+ &      &\times&\times&\times&      \\
+ &      &      &\times&\times&\times\\
+ &      &      &      &\times&\times\end{bmatrix}
+\]
+and
+\[
+\boldsymbol{A}^{(1)}\equiv\boldsymbol{H}_1\boldsymbol{A}\boldsymbol{H}_1
+      =\begin{bmatrix}
++&+&\times&      &      &      \\
++&+&\times&      &      &      \\
++&+&\times&\times&      &      \\
+ & &\times&\times&\times&      \\
+ & &      &\times&\times&\times\\
+ & &      &      &\times&\times\end{bmatrix}.
+\]
+Choose $\boldsymbol{u}_2$ so that
+$\boldsymbol{H}_2=\boldsymbol{I}-\tau_2\boldsymbol{u}_2\boldsymbol{u}_2^\top$
+zeros $a^{(1)}_{31}$. We have
+\[
+\boldsymbol{u}_2=\begin{bmatrix}0\\ 1\\ \times\\ 0\\ 0\\ 0\end{bmatrix}
+\qquad\text{and}\qquad
+\boldsymbol{u}_2^\top\boldsymbol{A}^{(1)}
+=\begin{bmatrix}\times&\times&\times&\times&0&0\end{bmatrix},
+\]
+so, noting that right-multiplication by~$\boldsymbol{H}_2$ leaves the first
+column unchanged and then appealing to symmetry,
+\[
+\boldsymbol{H}_2\boldsymbol{A}^{(1)}
+      =\begin{bmatrix}
+\times&\times&\times&      &      &      \\
+     +&     +&     +&     +&      &      \\
+      &     +&     +&     +&      &      \\
+      &      &\times&\times&\times&      \\
+      &      &      &\times&\times&\times\\
+      &      &      &      &\times&\times\end{bmatrix}
+\quad\text{and}\quad
+\boldsymbol{A}^{(2)}\equiv
+\boldsymbol{H}_2\boldsymbol{A}^{(1)}\boldsymbol{H}_2
+      =\begin{bmatrix}
+\times&+&      &      &      &      \\
+\times&+&     +&\times&      &      \\
+      &+&     +&\times&      &      \\
+      &+&     +&\times&\times&      \\
+      & &      &\times&\times&\times\\
+      & &      &      &\times&\times\end{bmatrix}.
+\]
+Choose $\boldsymbol{u}_3$ so that
+$\boldsymbol{H}_3=\boldsymbol{I}-\tau_3\boldsymbol{u}_3\boldsymbol{u}_3^\top$
+zeros $a^{(2)}_{42}$. We have
+\[
+\boldsymbol{u}_3=\begin{bmatrix}0\\ 0\\ 1\\ \times\\ 0\\ 0\end{bmatrix}
+\qquad\text{and}\qquad
+\boldsymbol{u}_3^\top\boldsymbol{A}^{(2)}
+=\begin{bmatrix}0&\times&\times&\times&\times&0\end{bmatrix},
+\]
+so
+\[
+\boldsymbol{H}_2\boldsymbol{A}^{(2)}
+      =\begin{bmatrix}
+\times&\times&      &      &      &      \\
+\times&\times&\times&\times&      &      \\
+      &     +&     +&     +&     +&      \\
+      &      &     +&     +&     +&      \\
+      &      &      &\times&\times&\times\\
+      &      &      &      &\times&\times\end{bmatrix}
+\quad\text{and}\quad
+\boldsymbol{A}^{(3)}\equiv\boldsymbol{H}_3\boldsymbol{A}^{(2)}\boldsymbol{H}_3
+      =\begin{bmatrix}
+\times&\times&      &      &      &      \\
+\times&\times&     +&      &      &      \\
+      &\times&     +&     +&\times&      \\
+      &      &     +&     +&\times&      \\
+      &      &     +&     +&\times&\times\\
+      &      &      &      &\times&\times\end{bmatrix}.
+\]
+Choose $\boldsymbol{u}_4$ so that
+$\boldsymbol{H}_4=\boldsymbol{I}-\tau_4\boldsymbol{u}_4\boldsymbol{u}_4^\top$
+zeros $a^{(3)}_{53}$. We have
+\[
+\boldsymbol{u}_4=\begin{bmatrix}0\\ 0\\ 0\\ 1\\ \times\\ 0\end{bmatrix}
+\qquad\text{and}\qquad
+\boldsymbol{u}_4^\top\boldsymbol{A}^{(3)}
+=\begin{bmatrix}0&0&\times&\times&\times&\times\end{bmatrix},
+\]
+so
+\[
+\boldsymbol{H}_4\boldsymbol{A}^{(3)}
+      =\begin{bmatrix}
+\times&\times&      &      &      &      \\
+\times&\times&\times&      &      &      \\
+      &\times&\times&\times&      \\
+      &      &     +&     +&     +&     +\\
+      &      &      &     +&     +&     +\\
+      &      &      &      &\times&\times\end{bmatrix}
+\quad\text{and}\quad
+\boldsymbol{A}^{(4)}\equiv\boldsymbol{H}_4\boldsymbol{A}^{(3)}\boldsymbol{H}_4
+      =\begin{bmatrix}
+\times&\times&      &      &      &      \\
+\times&\times&\times&      &      \\
+      &\times&\times&     +&      &      \\
+      &      &\times&     +&     +&\times\\
+      &      &      &     +&     +&\times\\
+      &      &      &     +&     +&\times\end{bmatrix}.
+\]
+Choose $\boldsymbol{u}_5$ so that
+$\boldsymbol{H}_5=\boldsymbol{I}-\tau_5\boldsymbol{u}_5\boldsymbol{u}_5^\top$
+zeros $a^{(4)}_{64}$. We have
+\[
+\boldsymbol{u}_5=\begin{bmatrix}0\\ 0\\ 0\\ 0\\ 1\\ \times\end{bmatrix}
+\qquad\text{and}\qquad
+\boldsymbol{u}_5^\top\boldsymbol{A}^{(4)}
+=\begin{bmatrix}0&0&0&\times&\times&\times&\end{bmatrix},
+\]
+so
+\[
+\boldsymbol{H}_5\boldsymbol{A}^{(3)}
+      =\begin{bmatrix}
+\times&\times&      &      &      &      \\
+\times&\times&\times&      &      \\
+      &\times&\times&\times&      &      \\
+      &      &\times&\times&\times&\times\\
+      &      &      &     +&     +&     +\\
+      &      &      &      &     +&     +\end{bmatrix}
+\quad\text{and}\quad
+\boldsymbol{A}^{(5)}\equiv\boldsymbol{H}_5\boldsymbol{A}^{(4)}\boldsymbol{H}_5
+      =\begin{bmatrix}
+\times&\times&      &      &      &      \\
+\times&\times&\times&      &      \\
+      &\times&\times&\times&      &      \\
+      &      &\times&\times&     +&      \\
+      &      &      &\times&     +&     +\\
+      &      &      &      &     +&     +\end{bmatrix}.
+\]
+We set
+$\bs{B}\equiv\bs{A}^{(5)}=\bs{H}_5\bs{H}_4\bs{H}_3\bs{H}_2\bs{H}_1\bs{A}
+\bs{H}_1\bs{H}_2\bs{H}_3\bs{H}_4\bs{H}_5$, or in other words,
+\[
+\bs{B}=\bs{Q}^\top\bs{A}\bs{Q}
+	\quad\text{where $\bs{Q}=\bs{H}_1\bs{H}_2\bs{H}_3\bs{H}_4\bs{H}_5$.}
+\]
+
+For general~$n$, the $j$th Householder transformation is determined by a
+number~$\gamma_j$ such that
+\[
+\bs{u}_j=\bs{e}_j+\gamma_j\bs{e}_{j+1}
+\quad\text{and}\quad
+\tau_j=\frac{2}{1+\gamma_j^2}\quad\text{for $1\le k\le n-1$.}
+\]
+Denote the diagonal and off-diagonal entries of $\bs{A}^{(j)}$ by
+\[
+a^{(j)}_i=a^{(j)}_{ii}\quad\text{and}\quad
+b^{(j)}_i=a^{(j)}_{i+1,i}=a^{(j)}_{i,i+1},
+\]
+and denote the extra non-zero entries by
+\[
+c_j=a^{(j)}_{j+2,j}=a^{(j)}_{j,j+2}.
+\]
+If we define $a^{(0)}_{-1,1}=0$, then the $j$th column of $\bs{A}^{(j)}$ is
+\[
+\bs{w}_j=\bs{A}^{(j)}\bs{e}_j=a^{(j-1)}_{j-1,j}\bs{e}_{j-1}
+	-\sigma_j\beta_j\bs{e}_j
+\]
+where
+\[
+\beta_j=\|\bs{A}^{(j-1)}_{j:n,j}\|\quad\text{and}\quad
+\sigma_j=\begin{cases}
++1&\text{if $a^{(j-1)}_{jj}\ge0$,}\\
+-1&\text{if $a^{(j-1)}_{jj}<0$,}
+\end{cases}
+\]
+so
+\[
+\bs{u}_j=\frac{\bs{A}^{(j-1)}_{1:n,j}-\bs{w}_j}{%
+\sigma_1\bigl(|a^{(j-1)}_{jj}|+\beta_j\bigr)}
+\quad\text{and}\quad
+\gamma_j=\frac{a^{(j-1)}_{j+1,j}}{\sigma_1\bigl(|a^{(j-1)}_{jj}|+\beta_j\bigr)}.
+\]
+Since $\bs{u}_j^\top\bs{e}_i=\delta_{ij}+\gamma_j\delta_{i,j+1}$,
+\[
+\bs{H}_j\bs{e}_i=\bs{e}_i\quad\text{for $1\le i\le j-1$ and $j+2\le i\le n$,}
+\]
+with
+\[
+\bs{H}_j\bs{e}_j=(1-\tau_j)\bs{e}_j-\tau_j\gamma_j\bs{e}_{j+1}
+\]
+and
+\[
+\bs{H}_j\bs{e}_{j+1}=-\tau_j\gamma_j\bs{e}_j+(1-\tau_j\gamma_j^2)\bs{e}_{j+1}.
+\]
+
+Using the identity
+\[
+a^{(j)}_i=\bs{e}_i^\top\bs{A}^{(j)}\bs{e}_i
+	=\bs{e}_i^\top\bs{H}_j\bs{A}^{(j-1)}\bs{H}_j\bs{e}_i
+	=(\bs{H}_j\bs{e}_i)^\top\bs{A}^{(j-1)}(\bs{H}_j\bs{e}_i),
+\]
+we see that
+\[
+a^{(j)}_i=a^{(j-1)}_i\quad\text{for $1\le i\le j-1$ and $j+2\le i\le n$,}
+\]
+with
+\begin{align*}
+a^{(j)}_j&=[(1-\tau_j)\bs{e}_j-\tau_j\gamma_j\bs{e}_{j+1}]^\top\bs{A}^{(j-1)}
+	[(1-\tau_j)\bs{e}_j-\tau_j\gamma_j\bs{e}_{j+1}]\\
+	&=(1-\tau_j)^2\bs{e}_j^\top\bs{A}^{(j-1)}\bs{e}_j
+	-(1-\tau_j)\tau_j\gamma_j\bs{e}_j^\top\bs{A}^{(j-1)}\bs{e}_{j+1}\\
+	&\qquad{}-\tau_j\gamma_j(1-\tau_j)\bs{e}_{j+1}^\top\bs{A}^{(j-1)}\bs{e}_j
+	+(\tau_j\gamma_j)^2\bs{e}_{j+1}^\top\bs{A}^{(j-1)}\bs{e}_{j+1}\\
+	&=(1-\tau_j)^2a^{(j-1)}_{jj}-(1-\tau_j)\tau_j\gamma_ja^{(j-1)}_{j,j+1}
+	-\tau_j\gamma_j(1-\tau_j)a^{(j-1)}_{j+1,j}
+	+(\tau_j\gamma_j)^2 a^{(j-1)}_{j+1,j+1},
+\end{align*}
+or in other words,
+\[
+a^{(j)}_j=(1-\tau_j)^2a^{(j-1)}_j-2(1-\tau_j)\tau_j\gamma_jb^{(j-1)}_j
+	+(\tau_j\gamma_j)^2 a^{(j-1)}_{j+1}.
+\]
+Similarly,
+\begin{align*}
+a^{(j)}_{j+1}
+&=[-\tau_j\gamma_j\bs{e}_j+(1-\tau_j\gamma_j^2)\bs{e}_{j+1}]^\top\bs{A}^{(j-1)}
+    [-\tau_j\gamma_j\bs{e}_j+(1-\tau_j\gamma_j^2)\bs{e}_{j+1}]\\
+	&=(\tau_j\gamma_j)^2\bs{e}_j^\top\bs{A}^{(j-1)}\bs{e}_j
+	-\tau_j\gamma_j(1-\tau_j\gamma_j^2)\bs{e}_j^\top\bs{A}^{(j-1)}\bs{e}_{j+1}\\
+	&\qquad-(1-\tau_j\gamma_j^2)\tau_j\gamma_j
+		\bs{e}_{j+1}^\top\bs{A}^{(j-1)}\bs{e}_j
+	+(1-\tau_j\gamma_j^2)^2\bs{e}_{j+1}^\top\bs{A}^{(j-1)}\bs{e}_{j+1}\\
+	&=(\tau_j\gamma_j)^2a^{(j-1)}_{jj}
+	-2\tau_j\gamma_j(1-\tau_j\gamma_j^2)a^{(j-1)}_{j+1,j}
+	+(1-\tau_j\gamma_j^2)^2a^{(j-1)}_{j+1,j+1},
+\end{align*}
+or in other words,
+\[
+a^{(j)}_{j+1}=(\tau_j\gamma_j)^2a^{(j-1)}_j
+	-2\tau_j\gamma_j(1-\tau_j\gamma_j^2)b^{(j-1)}_j
+	+(1-\tau_j\gamma_j^2)^2a^{(j-1)}_{j+1}.
+\]
+
+For the off-diagonal entries we have
+\[
+b^{(j)}_i=\bs{e}_{i+1}^\top\bs{A}^{(j)}\bs{e}_i
+	=\bs{e}_{i+1}^\top\bs{H}_j\bs{A}^{(j-1)}\bs{H}_j\bs{e}_i
+	=(\bs{H}_j\bs{e}_{i+1})^\top\bs{A}^{(j-1)}(\bs{H}_j\bs{e}_i),
+\]
+so
+\[
+b^{(j)}_i=b^{(j-1)}_i\quad\text{for $1\le i\le j-2$ and $j+2\le i\le n$.}
+\]
+When $i=j-1$,
+\begin{align*}
+b^{(j)}_{j-1}&=a^{(j)}_{j,j-1}
+	=(\bs{H}_j\bs{e}_j)^\top\bs{A}^{(j-1)}(\bs{H}_j\bs{e}_{j-1})
+	=[(1-\tau_j)\bs{e}_j-\tau_j\gamma_j\bs{e}_{j+1}]^\top
+		\bs{A}^{(j-1)}\bs{e}_{j-1}\\
+	&=(1-\tau_j)a^{(j-1)}_{j,j-1}-\tau_j\gamma_ja^{(j-1)}_{j+1,j-1},
+\end{align*}
+that is,
+\[
+b^{(j)}_{j-1}=(1-\tau_j)b^{(j-1)}_{j-1}-\tau_j\gamma_jc_{j-1}.
+\]
+When $i=j$,
+\begin{align*}
+b^{(j)}_j&=a^{(j)}_{j+1,j}
+	=(\bs{H}_j\bs{e}_{j+1})^\top\bs{A}^{(j-1)}\bs{H}_j\bs{e}_j\\
+	&=[-\tau_j\gamma_j\bs{e}_j+(1-\tau_j\gamma_j^2)\bs{e}_{j+1}]^\top
+	\bs{A}^{(j-1)}[(1-\tau_j)\bs{e}_j-\tau_j\gamma_j\bs{e}_{j+1}]\\
+	&=-\tau_j\gamma_j(1-\tau_j)a^{(j-1)}_{jj}
+	+(\tau_j\gamma_j)^2a^{(j-1)}_{j,j+1}\\
+	&\qquad{}+(1-\tau_j\gamma_j^2)(1-\tau_j)a^{(j-1)}_{j+1,j}
+	-(1-\tau_j\gamma_j^2)\tau_j\gamma_ja^{(j-1)}_{j+1,j+1}
+\end{align*}
+so
+\[
+ b^{(j)}_j=-\tau_j\gamma_j(1-\tau_j)a^{(j-1)}_j
+	+\bigl[(\tau_j\gamma_j)^2+(1-\tau_j\gamma_j^2)(1-\tau_j)\bigr]b^{(j-1)}_j
+	-(1-\tau_j\gamma_j^2)\tau_j\gamma_ja^{(j-1)}_{j+1}.
+\]
+When $i=j+1$,
+\begin{align*}
+b^{(j)}_{j+1}&=a^{(j)}_{j+2,j+1}
+	=(\bs{H}_j\bs{e}_{j+2})^\top\bs{A}^{(j-1)}(\bs{H}_j\bs{e}_{j+1})\\
+	&=\bs{e}_{j+2}^\top\bs{A}^{(j-1)}
+		[-\tau_j\gamma_j\bs{e}_j+(1-\tau_j\gamma_j^2)\bs{e}_{j+1}]
+	=-\tau_j\gamma_ja^{(j-1)}_{j+2,j}+(1-\tau_j\gamma_j^2)a^{(j-1)}_{j+2,j+1}
+\end{align*}
+so
+\[
+b^{(j)}_{j+1}=(1-\tau_j\gamma_j^2)b^{(j-1)}_{j+1}.
+\]
+In addition,
+\begin{align*}
+c_j&=a^{(j)}_{j+2,j}
+	=(\bs{H}_j\bs{e}_{j+2})^\top\bs{A}^{(j-1)}(\bs{H}_j\bs{e}_j)\\
+	&=\bs{e}_{j+2}^\top\bs{A}^{(j-1)}
+	[(1-\tau_j)\bs{e}_j-\tau_j\gamma_j\bs{e}_{j+1}]
+	=(1-\tau_j)a^{(j-1)}_{j+2,j}-\tau_j\gamma_ja^{(j-1)}_{j+2,j+1}
+\end{align*}
+so
+\[
+c_j=-\tau_j\gamma_jb^{(j-1)}_{j+1}.
+\]
+
+In practice, we incorporate a shift~$\mu$ so that $\bs{A}$ is replaced
+by~$\bs{A}-\mu\bs{I}$ in the above calculations.  Since
+\begin{align*}
+\smash[b]{\det\biggl(\lambda\begin{bmatrix}1&0\\ 0&1\end{bmatrix}
+    -\begin{bmatrix}a_{n-1}&b_{n-1}\\ b_{n-1}&a_n \end{bmatrix}\biggr)}
+&=(\lambda-a_{n-1})(\lambda-a_n)-b_{n-1}^2\\
+&=\bigl(\lambda-\tfrac12(a_{n-1}+a_n)\bigr)^2
+    -\bigl(\tfrac14(a_{n-1}-a_n)^2+b_{n-1}^2\bigr),
+\end{align*}
+the eigenvalues of the lower-right, $2\times2$ submatrix of~$\bs{A}$ are
+\begin{equation}\label{eq: 2x2 eigs}
+\lambda_\pm=\frac{1}{2}\bigl(a_{n-1}+a_n\pm\sqrt{(a_{n-1}-a_n)^2+(2b_{n-1})^2}
+\bigr),
+\end{equation}
+and we set $\mu$ equal to whichever of $\lambda_+$~and $\lambda_-$ is closest
+to $a_n$.
+
+
+
+
+
 
 
 
