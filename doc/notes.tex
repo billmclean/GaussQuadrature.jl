@@ -1072,32 +1072,36 @@ number~$\gamma_j$ such that
 \]
 Denote the diagonal and off-diagonal entries of $\bs{A}^{(j)}$ by
 \[
-a^{(j)}_i=a^{(j)}_{ii}\quad\text{and}\quad
-b^{(j)}_i=a^{(j)}_{i+1,i}=a^{(j)}_{i,i+1},
+a^{(j)}_i=a^{(j)}_{ii}\quad\text{for $1\le i\le n$,}
 \]
-and denote the extra non-zero entries by
+and
 \[
-c_j=a^{(j)}_{j+2,j}=a^{(j)}_{j,j+2}.
+b^{(j)}_i=a^{(j)}_{i+1,i}=a^{(j)}_{i,i+1}
+\quad\text{for $1\le i\le n-1$,}
 \]
-If we define $a^{(0)}_{-1,1}=0$, then the $j$th column of $\bs{A}^{(j)}$ is
+if $1\le j\le n-1$, and denote the extra non-zero entries by
 \[
-\bs{w}_j=\bs{A}^{(j)}\bs{e}_j=a^{(j-1)}_{j-1,j}\bs{e}_{j-1}
-	-\sigma_j\beta_j\bs{e}_j
+c_j=a^{(j)}_{j+2,j}=a^{(j)}_{j,j+2}
+    \quad\text{for $1\le j\le n-2$.}
+\]
+The first column of~$\bs{H}_1\bs{A}$ is
+\[
+\bs{w}_1=\bs{H}_1\bs{A}\bs{e}_j=-\sigma_1\beta_1\bs{e}_1
 \]
 where
 \[
-\beta_j=\|\bs{A}^{(j-1)}_{j:n,j}\|\quad\text{and}\quad
-\sigma_j=\begin{cases}
-+1&\text{if $a^{(j-1)}_{jj}\ge0$,}\\
--1&\text{if $a^{(j-1)}_{jj}<0$,}
+\beta_1=\|\bs{A}_{1:n,1}\|=\sqrt{(a_1)^2+(b_1)^2}\quad\text{and}\quad
+\sigma_1=\begin{cases}
++1&\text{if $a_1\ge0$,}\\
+-1&\text{if $a_1<0$,}
 \end{cases}
 \]
 so
 \[
-\bs{u}_j=\frac{\bs{A}^{(j-1)}_{1:n,j}-\bs{w}_j}{%
-\sigma_1\bigl(|a^{(j-1)}_{jj}|+\beta_j\bigr)}
+\bs{u}_1=\frac{\bs{A}_{1:n,1}-\bs{w}_1}{%
+\sigma_1\bigl(|a_1|+\beta_1\bigr)}
 \quad\text{and}\quad
-\gamma_j=\frac{a^{(j-1)}_{j+1,j}}{\sigma_1\bigl(|a^{(j-1)}_{jj}|+\beta_j\bigr)}.
+\gamma_1=\frac{b_1}{\sigma_1\bigl(|a_1|+\beta_1\bigr)}.
 \]
 Since $\bs{u}_j^\top\bs{e}_i=\delta_{ij}+\gamma_j\delta_{i,j+1}$,
 \[
@@ -1225,7 +1229,14 @@ c_j=-\tau_j\gamma_jb^{(j-1)}_{j+1}.
 \]
 
 In practice, we incorporate a shift~$\mu$ so that $\bs{A}$ is replaced
-by~$\bs{A}-\mu\bs{I}$ in the above calculations.  Since
+by~$\bs{A}-\mu\bs{I}$ in the above calculations, so that 
+$\bs{B}=\bs{Q}^\top(\bs{A}-\mu\bs{I})\bs{Q}$ and
+\[
+\bs{B}+\mu\bs{I}=\bs{Q}^\top\bs{A}\bs{Q}.
+\]
+In this way, $\bs{B}+\mu\bs{I}$ has the same spectrum as~$\bs{A}$.  The 
+Householder transformations are discarded and we use inverse iteration to 
+compute the eigenvectors after the eigenvalues have been found. Since
 \begin{align*}
 \smash[b]{\det\biggl(\lambda\begin{bmatrix}1&0\\ 0&1\end{bmatrix}
     -\begin{bmatrix}a_{n-1}&b_{n-1}\\ b_{n-1}&a_n \end{bmatrix}\biggr)}
@@ -1239,7 +1250,7 @@ the eigenvalues of the lower-right, $2\times2$ submatrix of~$\bs{A}$ are
 \bigr),
 \end{equation}
 and we set $\mu$ equal to whichever of $\lambda_+$~and $\lambda_-$ is closest
-to $a_n$.
+to $a_n$.  
 
 
 
