@@ -1,5 +1,6 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage{amsmath,amsthm,amsfonts,tikz}
+\usepackage{algorithm,algpseudocode}
 \usepackage[margin=2cm]{geometry}
 \usepackage[euler-digits]{eulervm}
 \usepackage{hyperref}
@@ -13,6 +14,7 @@
 \newcommand{\Poly}{\mathbb{P}}
 \newcommand{\bs}[1]{\boldsymbol{#1}}
 \newcommand{\vecspan}{\operatorname{span}}
+\newcommand{\sign}{\mathrm{sign}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Notes on Gauss Quadrature for General Weight Functions}
 \author{Bill McLean}
@@ -822,11 +824,11 @@ the eigenpairs of the Jacobi matrix, or, in general, of any symmetric
 tridiagonal matrix
 \[
 \bs{A}=\begin{bmatrix}
-a_1&b_2   &       &       &\\
-b_2&a_2   &b_3    &       &\\
+a_1&b_1   &       &       &\\
+b_1&a_2   &b_2    &       &\\
    &\ddots&\ddots &\ddots &\\
-   &      &b_{n-1}&a_{n-1}&b_n\\
-   &      &       &b_n    &a_n
+   &      &b_{n-2}&a_{n-1}&b_{n-1}\\
+   &      &       &b_{n-1}&a_n
 \end{bmatrix}.
 \]
 Such a matrix~$\bs{A}$ is said to be \emph{unreduced} if
@@ -902,7 +904,7 @@ We construct a Householder transformation
 $\boldsymbol{H}_1=\boldsymbol{I}-\tau_1\boldsymbol{u}_1\boldsymbol{u}_1^\top$
 such that
 \[
-\boldsymbol{H}_1\boldsymbol{x}=\|\boldsymbol{x}\|\boldsymbol{e}_1
+\boldsymbol{H}_1\boldsymbol{x}=\pm\|\boldsymbol{x}\|\boldsymbol{e}_1
 \quad\text{where}\quad\boldsymbol{x}
       =\boldsymbol{A}\boldsymbol{e}_1.
 \]
@@ -1062,6 +1064,9 @@ $\bs{B}\equiv\bs{A}^{(5)}=\bs{H}_5\bs{H}_4\bs{H}_3\bs{H}_2\bs{H}_1\bs{A}
 \bs{B}=\bs{Q}^\top\bs{A}\bs{Q}
 	\quad\text{where $\bs{Q}=\bs{H}_1\bs{H}_2\bs{H}_3\bs{H}_4\bs{H}_5$.}
 \]
+Since $\bs{H}_j\bs{e}_1=\bs{e}_1$ for $2\le j\le 5$, it follows that
+$\bs{Q}\bs{e}_1=\bs{H}_1\bs{e}_1$ is a non-zero multiple of the first column 
+of~$\bs{A}$, so that assumptions of \cref{thm: implicit Q} are satisfied.
 
 For general~$n$, the $j$th Householder transformation is determined by a
 number~$\gamma_j$ such that
@@ -1069,6 +1074,18 @@ number~$\gamma_j$ such that
 \bs{u}_j=\bs{e}_j+\gamma_j\bs{e}_{j+1}
 \quad\text{and}\quad
 \tau_j=\frac{2}{1+\gamma_j^2}\quad\text{for $1\le k\le n-1$.}
+\]
+Since $\bs{u}_j^\top\bs{e}_i=\delta_{ij}+\gamma_j\delta_{i,j+1}$,
+\[
+\bs{H}_j\bs{e}_i=\bs{e}_i\quad\text{for $1\le i\le j-1$ and $j+2\le i\le n$,}
+\]
+with
+\[
+\bs{H}_j\bs{e}_j=(1-\tau_j)\bs{e}_j-\tau_j\gamma_j\bs{e}_{j+1}
+\]
+and
+\[
+\bs{H}_j\bs{e}_{j+1}=-\tau_j\gamma_j\bs{e}_j+(1-\tau_j\gamma_j^2)\bs{e}_{j+1}.
 \]
 Denote the diagonal and off-diagonal entries of $\bs{A}^{(j)}$ by
 \[
@@ -1086,7 +1103,7 @@ c_j=a^{(j)}_{j+2,j}=a^{(j)}_{j,j+2}
 \]
 The first column of~$\bs{H}_1\bs{A}$ is
 \[
-\bs{w}_1=\bs{H}_1\bs{A}\bs{e}_j=-\sigma_1\beta_1\bs{e}_1
+\bs{w}_1=\bs{H}_1\bs{A}\bs{e}_1=-\sigma_1\beta_1\bs{e}_1
 \]
 where
 \[
@@ -1101,19 +1118,46 @@ so
 \bs{u}_1=\frac{\bs{A}_{1:n,1}-\bs{w}_1}{%
 \sigma_1\bigl(|a_1|+\beta_1\bigr)}
 \quad\text{and}\quad
-\gamma_1=\frac{b_1}{\sigma_1\bigl(|a_1|+\beta_1\bigr)}.
+\gamma_1=\frac{\sigma_1b_1}{|a_1|+\beta_1}.
 \]
-Since $\bs{u}_j^\top\bs{e}_i=\delta_{ij}+\gamma_j\delta_{i,j+1}$,
+Also,
+\begin{align*}
+c_1&=a^{(1)}_{13}=\bs{e}_1^\top\bs{A}^{(1)}\bs{e}_3
+    =\bs{e}_1^\top\bs{H}_1\bs{A}\bs{H}_1\bs{e}_3
+    =(\bs{H}\bs{e}_1)^\top\bs{A}(\bs{H}_1\bs{e_3})\\
+    &=[(1-\tau_1)\bs{e}_1-\tau_1\gamma_1\bs{e}_2]\bs{A}\bs{e}_3
+    =(1-\tau_1)a_{13}-\tau_1\gamma_1a_{23}
+\end{align*}
+and hence
 \[
-\bs{H}_j\bs{e}_i=\bs{e}_i\quad\text{for $1\le i\le j-1$ and $j+2\le i\le n$,}
+c_1=-\tau_1\gamma_1b_2.
 \]
-with
+For $2\le j\le n-1$, 
 \[
-\bs{H}_j\bs{e}_j=(1-\tau_j)\bs{e}_j-\tau_j\gamma_j\bs{e}_{j+1}
+\bs{A}^{(j-1)}\bs{e}_{j-1}=b^{(j-1)}_{j-2}\bs{e}_{j-2}
+    +a^{(j-1)}_{j-1}\bs{e}_{j-1}+b^{(j-1)}_{j-1}\bs{e}_j+c_{j-1}\bs{e}_{j+1}
 \]
 and
 \[
-\bs{H}_j\bs{e}_{j+1}=-\tau_j\gamma_j\bs{e}_j+(1-\tau_j\gamma_j^2)\bs{e}_{j+1}.
+\bs{w}_j=\bs{H}_j\bs{A}^{(j-1)}\bs{e}_{j-1}
+    =b^{(j-1)}_{j-2}\bs{e}_{j-2}+a^{(j-1)}_{j-1}\bs{e}_{j-1}
+    -\sigma_j\beta_j\bs{e}_j
+\]
+where
+\[
+\beta_j=\|\bs{A}^{(j-1)}_{j:n,j-1}\|=\sqrt{(b^{(j-1)}_{j-1})^2+(c_{j-1})^2}
+\quad\text{and}\quad
+\sigma_j=\begin{cases}
++j&\text{if $b^{(j-1)}_{j-1}\ge0$,}\\
+-j&\text{if $b^{(j-1)}_{j-1}<0$,}
+\end{cases}
+\]
+so
+\[
+\bs{u}_j=\frac{\bs{A}^{(j-1)}_{1:n,j-1}-\bs{w}_j}{%
+\sigma_j(|b^{(j-1)}_{j-1}|+\beta_j)}
+\quad\text{and}\quad
+\gamma_j=\frac{\sigma_jc_{j-1}}{|b^{(j-1)}_{j-1}|+\beta_j}.
 \]
 
 Using the identity
@@ -1227,6 +1271,28 @@ so
 \[
 c_j=-\tau_j\gamma_jb^{(j-1)}_{j+1}.
 \]
+
+\begin{algorithm}
+\begin{algorithmic}
+\Function{implicit\_Q\_step}{$\bs{a}$, $\bs{b}$} 
+\State $\beta=\sqrt{(a_1)^2+(b_1)^2}$
+\State $\sigma=\sign(a_1)$
+\State $\gamma=\sigma b_1/(|a_1|+\beta)$
+\State $\tau=2/(1+\gamma^2)$
+\State $c=-\tau\gamma b_2$
+\State $(t_1,t_2)\gets(a_1,a_2)$
+\State $a_1\gets(1-\tau)^2t_1-2(1-\tau)\tau\gamma b_1+(\tau\gamma)^2t_2$
+\State $a_2\gets(\tau\gamma)^2t_1-2\tau\gamma(1-\tau\gamma^2)b_1
++(1-\tau\gamma^2)^2t_2$
+\State $b_1\gets-\tau\gamma(1-\tau)t_1
++[(\tau\gamma)^2+(1-\tau\gamma^2)(1-\tau)b_1-(1-\tau\gamma^2)\tau\gamma t_2$
+\State $c_2\gets-\tau\gamma b_2$
+\State $b_2\gets(1-\tau\gamma^2)b_2$
+\For{$j=2:n-1$}
+\EndFor
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
 
 In practice, we incorporate a shift~$\mu$ so that $\bs{A}$ is replaced
 by~$\bs{A}-\mu\bs{I}$ in the above calculations, so that 
