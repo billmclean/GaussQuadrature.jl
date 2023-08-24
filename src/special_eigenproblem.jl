@@ -81,7 +81,7 @@ function implicit_Q_step!(a::Vector{T}, b::Vector{T}, z::Vector{T}, μ::T,
         d = s * b[j+2]
         b[j+2] *= c
     end
-    # Final Givens rotation, restores tridiagonal form
+    # Final Givens rotation, tridiagonal form restored
     h = hypot(b[k-1], d)
     c = b[k-1] / h
     s = d / h
