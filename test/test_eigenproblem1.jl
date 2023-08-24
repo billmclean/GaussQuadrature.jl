@@ -1,5 +1,3 @@
-using LinearAlgebra
-
 const n = 8
 a, b = legendre_coefs(Float64, n)
 

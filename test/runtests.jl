@@ -1,8 +1,10 @@
 using GaussQuadrature
-using SpecialFunctions: besseli
 using Test
+import LinearAlgebra: SymTridiagonal, eigen
+import SpecialFunctions: besseli
 
-include("test_eigen.jl")
+include("test_eigenproblem1.jl")
+include("test_eigenproblem2.jl")
 include("test_legendre.jl")
 include("test_chebyshev.jl")
 include("test_jacobi.jl")
