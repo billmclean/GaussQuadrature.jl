@@ -7,7 +7,7 @@ a[i]   On entry, holds the ith diagonal entry of the matrix.
        On exit, holds the ith eigenvalue.
 
 b[i]   On entry, holds the [i,i-1] entry of the matrix for
-       i = 2, 3, ..., n.  (The value of e[1] is not used.)
+       i = 2, 3, ..., n.  (The value of b[1] is not used.)
        On exit, e is overwritten.
 
 z[i]   On exit, holds the first component of the ith normalised
@@ -52,15 +52,54 @@ end
 
 function implicit_Q_step!(a::Vector{T}, b::Vector{T}, z::Vector{T}, μ::T, 
 	                  k::Integer) where T <: AbstractFloat
-    c, s, d = initial_Givens_step!(a, b, μ)
-    Givens_update!(z, c, s, 1)
-    for j = 2:k-2
-	c, s, d = general_Givens_step!(a, b, d, j)
-        Givens_update!(z, c, s, j)
+
+    function apply_Givens_rotation!(j::Integer)
+        t1, t2 = a[j], a[j+1]
+        a[j]   = c^2 * t1 + 2c * s * b[j+1] + s^2 * t2
+        a[j+1] = s^2 * t1 - 2c * s * b[j+1] + c^2 * t2
+        b[j+1] = (c+s) * (c-s) * b[j+1] + c * s * (t2 - t1)
+        t1, t2 = z[j], z[j+1]
+        z[j]   =  c * t1 + s * t2
+        z[j+1] = -s * t1 + c * t2
     end
-    c, s = final_Givens_step!(a, b, d, k-1)
-    Givens_update!(z, c, s, k-1)
+
+    # First Givens rotation, incorporating shift μ
+    h = hypot(a[1] - μ, b[2])
+    c = (a[1] - μ) / h
+    s = b[2] / h
+    apply_Givens_rotation!(1)
+    d = s * b[3]
+    b[3] *= c
+    # Chase the bulge
+    for j = 2:k-2
+	# jth Givens rotation
+        h = hypot(b[j], d)
+        c = b[j] / h
+        s = d / h
+        b[j] = c * b[j] + s * d
+        apply_Givens_rotation!(j)
+        d = s * b[j+2]
+        b[j+2] *= c
+    end
+    # Final Givens rotation, restores tridiagonal form
+    h = hypot(b[k-1], d)
+    c = b[k-1] / h
+    s = d / h
+    b[k-1]   = c * b[k-1] + s * d
+    apply_Givens_rotation!(k-1)
 end
+
+#function implicit_Q_step!(a::Vector{T}, b::Vector{T}, z::Vector{T}, μ::T, 
+#	                  k::Integer) where T <: AbstractFloat
+#    c, s, d = initial_Givens_step!(a, b, μ)
+#    Givens_update!(z, c, s, 1)
+#    for j = 2:k-2
+#	c, s, d = general_Givens_step!(a, b, d, j)
+#        Givens_update!(z, c, s, j)
+#    end
+#    c, s = final_Givens_step!(a, b, d, k-1)
+#    Givens_update!(z, c, s, k-1)
+#end
 
 function Givens_update!(z::Vector{T}, c::T, s::T, 
 	                j::Integer) where T <: AbstractFloat
@@ -74,10 +113,12 @@ function initial_Givens_step!(a::Vector{T}, b::Vector{T}, μ::T
     h = hypot(a[1] - μ, b[2])
     c = (a[1] - μ) / h
     s = b[2] / h
+
     t1, t2 = a[1], a[2]
     a[1] = c^2 * t1 + 2c * s * b[2] + s^2 * t2
     a[2] = s^2 * t1 - 2c * s * b[2] + c^2 * t2
     b[2] = (c+s) * (c-s) * b[2] + c * s * (t2 - t1)
+
     d = s * b[3]
     b[3] *= c
     return c, s, d
@@ -88,11 +129,14 @@ function general_Givens_step!(a::Vector{T}, b::Vector{T}, d::T,
     h = hypot(b[j], d)
     c = b[j] / h
     s = d / h
+
+    b[j]   = c * b[j] + s * d
+
     t1, t2 = a[j], a[j+1]
     a[j]   = c^2 * t1 + 2c * s * b[j+1] + s^2 * t2
     a[j+1] = s^2 * t1 - 2c * s * b[j+1] + c^2 * t2
-    b[j]   = c * b[j] + s * d
     b[j+1] = (c+s) * (c-s) * b[j+1] + c * s * (t2 - t1)
+
     d = s * b[j+2]
     b[j+2] *= c
     return c, s, d
@@ -103,10 +147,12 @@ function final_Givens_step!(a::Vector{T}, b::Vector{T}, d::T,
     h = hypot(b[j], d)
     c = b[j] / h
     s = d / h
+
+    b[j]   = c * b[j] + s * d
+
     t1, t2 = a[j], a[j+1]
     a[j]   = c^2 * t1 + 2c * s * b[j+1] + s^2 * t2
     a[j+1] = s^2 * t1 - 2c * s * b[j+1] + c^2 * t2
-    b[j]   = c * b[j] + s * d
     b[j+1] = (c+s) * (c-s) * b[j+1] + c * s * (t2 - t1)
     return c, s, d
 end
