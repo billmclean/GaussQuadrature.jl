@@ -29,7 +29,7 @@
 Let $\Poly_k$ denote the $(k+1)$-dimensional vector space of real 
 polynomials with degree at most~$k$, and denote the 
 infinite-dimensional space of all polynomials by~$\Poly$.  Let $\mu$ 
-be a positive measure on the real line with the property that, 
+be a positive measure on the real line with the property that if
 $\int f(x)^2\,d\mu(x)=0$~and $f\in\Poly$ then $f=0$.
 We can then define an inner product and norm on~$\Poly$  by
 \[
@@ -37,8 +37,8 @@ We can then define an inner product and norm on~$\Poly$  by
 \|f\|=\sqrt{\iprod{f,f}}.
 \]
 Using the Gram--Schmidt procedure to orthogonalise the linearly 
-independent monomials $1$, $x$, $x^2$, $x^3$, \dots, yields the
-polynomial~$p_j(x)$ of degree~$j$ by
+independent monomials $1$, $x$, $x^2$, $x^3$, \dots, yields a
+polynomial of degree~$j$,  
 \[
 p_j(x)=x^j-\sum_{k=0}^{j-1}\frac{\iprod{x^j,p_k}}{\|p_k\|^2}\,p_k(x)
 	\quad\text{for $j=0$, $1$, $2$, \dots.}
@@ -53,16 +53,16 @@ that $p_j\perp\Poly_{j-1}$; in particular,
 The orthogonal polynomials defined above satisfy the three-term 
 recurrence relation
 \begin{equation}\label{eq: 3 term pj}
-p_j(x)=(x-a_j)p_{j-1}(x)-b_j^2p_{j-2}(x)
+p_j(x)=(x-a_j)p_{j-1}(x)-b_{j-1}^2p_{j-2}(x)
 	\quad\text{for $j=1$, $2$, $3$, \dots,}
 \end{equation}
 with $p_0(x)=1$ and $p_{-1}(x)=0$. The coefficients satisfy
 \[
 a_j=\frac{\iprod{xp_{j-1},p_{j-1}}}{\|p_{j-1}\|^2}
 \quad\text{and}\quad
-b_j=\frac{\|p_{j-1}\|}{\|p_{j-2}\|},
+b_j=\frac{\|p_j\|}{\|p_{j-1}\|},
 \]
-except that, by convention, we put $b_1=\sqrt{\int d\nu}=\|p_0\|$.
+except that, by convention, we put $b_0=\|p_0\|=\sqrt{\int\,d\mu}$.
 \end{theorem}
 \begin{proof}
 Since $p_j(x)-xp_{j-1}(x)$ has degree at most~$j-1$, there are 
@@ -80,21 +80,30 @@ sides with~$p_k$ for $k\le j-3$ gives
 \[
 c_{jk}\|p_k\|^2=\iprod{p_j-xp_{j-1},p_k}=-\iprod{p_{j-1},xp_k}=0,
 \]
-so $p_j(x)=(x-a_j)p_{j-1}(x)+c_{j,j-2}p_{j-2}(x)$ and
+so 
+\[
+p_j(x)-xp_{j-1}(x)=\sum_{k=j-2}^{j-1}c_{jk}p_k(x)
+	=-a_jp_{j-1}(x)+c_{j,j-2}p_{j-2}(x).
+\]
+Hence,
+\[
+p_j(x)=(x-a_j)p_{j-1}(x)+c_{j,j-2}p_{j-2}(x)
+\]
+and
 \[
 0=\iprod{p_j,p_{j-2}}=\iprod{xp_{j-1},p_{j-2}}+c_{j,j-2}\|p_{j-2}\|^2.
 \]
-Finally, 
-\begin{align*}
-\iprod{xp_{j-1},p_{j-2}}&=\iprod{p_{j-1},xp_{j-2}}
-	=\iprod{p_{j-1},p_{j-1}}+\iprod{p_{j-1},xp_{j-2}-p_{j-1}}\\
-	&=\|p_{j-1}\|^2+0,
-\end{align*}
-and therefore $c_{j,j-2}=-\|p_{j-1}\|^2/\|p_{j-2}\|^2=-b_j^2$.
+Finally, since $xp_{j-2}-p_{j-1}\in\Poly_{j-2}$,
+\[
+\iprod{xp_{j-1},p_{j-2}}=\iprod{p_{j-1},xp_{j-2}}
+	=\iprod{p_{j-1},p_{j-1}}+\iprod{p_{j-1},xp_{j-2}-p_{j-1}}
+	=\|p_{j-1}\|^2+0,
+\]
+and therefore $c_{j,j-2}=-\|p_{j-1}\|^2/\|p_{j-2}\|^2=-b_{j-1}^2$.
 \end{proof}
 
 \begin{corollary}
-$\|p_j\|=b_1b_2\cdots b_{j+1}$ for $j=2$, $3$, \dots.
+$\|p_j\|=b_0b_1\cdots b_j$ for $j=1$, $2$, $3$, \dots.
 \end{corollary}
 
 Recall that the Lagrange interpolation polynomial
@@ -123,7 +132,7 @@ p_n(x)=\bigl[x-(\alpha+i\beta)\bigr]\bigl[x-(\alpha-i\beta)\bigr]q(x)
 \]
 with $n\ge2$~and $q\in\Poly_{n-2}$. Since $p_n\perp\Poly_{n-2}$,
 \[
-0=\iprod{p_n,q}=\iprod{[(x-\alpha)^2+\beta^2],q}\\
+0=\iprod{p_n,q}=\iprod{[(x-\alpha)^2+\beta^2]q,q}\\
 	=\|(x-\alpha)q\|^2+\beta^2\|q\|^2,
 \]
 implying that $q=0$ and thus $p_n=0$, a contradiction.
@@ -166,19 +175,19 @@ We denote the ortho\emph{normal} polynomials by
 \hat p_j(x)=\frac{p_j(x)}{\|p_j\|},
 \]
 and find that
-\[
-b_{j+1}\hat p_j(x)=(x-a_j)\hat p_{j-1}(x)-b_j\hat p_{j-2}(x),
-\]
+\begin{equation}\label{eq: p hat recurrence}
+b_j\hat p_j(x)=(x-a_j)\hat p_{j-1}(x)-b_{j-1}\hat p_{j-2}(x),
+\end{equation}
 or equivalently,
 \begin{equation}\label{eq: 3 term orthog}
-b_j\hat p_{j-2}(x)+a_j\hat p_{j-1}(x)+b_{j+1}\hat p_j(x)=xp_{j-1}(x).
+b_{j-1}\hat p_{j-2}(x)+a_j\hat p_{j-1}(x)+b_j\hat p_j(x)=xp_{j-1}(x).
 \end{equation}
 
 \begin{theorem}[Christoffel--Darboux identity]
 \label{thm: Christoffel-Darboux}
 The monic orthogonal polynomials satisfy
 \[
-\frac{1}{b_{n+2}}\sum_{k=0}^n\hat p_k(x)\hat p_k(y)
+\frac{1}{b_{n+1}}\sum_{k=0}^n\hat p_k(x)\hat p_k(y)
 	=\frac{\hat p_{n+1}(x)\hat p_n(y)-\hat p_n(x)\hat p_{n+1}(y)}{x-y}
 	\quad\text{for $x\ne y$.}
 \]
@@ -190,59 +199,60 @@ Using \eqref{eq: 3 term orthog}, we see that
 	=[x\hat p_{k-1}(x)]\hat p_{k-1}(y)
 		-\hat p_{k-1}(x)[y\hat p_{k-1}(y)]\\
 	&=\bigl[
-	b_k\hat p_{k-2}(x)+a_k\hat p_{k-1}(x)+b_{k+1}\hat p_k(x)
+	b_{k-1}\hat p_{k-2}(x)+a_k\hat p_{k-1}(x)+b_k\hat p_k(x)
 	\bigr]\hat p_{k-1}(y)\\
 	&\qquad{}-\hat p_{k-1}(x)\bigl[
-	b_k\hat p_{k-2}(y)+a_k\hat p_{k-1}(y)+b_{k+1}\hat p_k(y)\bigr]\\
-	&=\bigl[b_k\hat p_{k-2}(x)\hat p_{k-1}(y)
-		-b_{k+1}\hat p_{k-1}(x)\hat p_k(y)\bigr]\\
-	&\qquad{}+\bigl[b_{k+1}\hat p_k(x)\hat p_{k-1}(y)
-		-b_k\hat p_{k-1}(x)\hat p_{k-2}(y)\bigr]\\
+	b_{k-1}\hat p_{k-2}(y)+a_k\hat p_{k-1}(y)+b_k\hat p_k(y)\bigr]\\
+	&=\bigl[b_{k-1}\hat p_{k-2}(x)\hat p_{k-1}(y)
+		-b_k\hat p_{k-1}(x)\hat p_k(y)\bigr]\\
+	&\qquad{}+\bigl[b_k\hat p_k(x)\hat p_{k-1}(y)
+		-b_{k-1}\hat p_{k-1}(x)\hat p_{k-2}(y)\bigr]\\
 \end{align*}
 and so
 \begin{align*}
-(x-y)\sum_{k=1}^{n+1}\hat p_{k-1}(x)\hat p_{k-1}(y)
-	&=b_1\hat p_{-1}(x)\hat p_0(y)-b_{n+2}\hat p_n(x)\hat p_{n+1}(y)\\
-	&\qquad{}+b_{n+2}\hat p_{n+1}(x)\hat p_n(y)
-		-b_1\hat p_0(x)\hat p_{-1}(y).
+(x-y)\smash[b]{\sum_{k=1}^{n+1}}\hat p_{k-1}(x)\hat p_{k-1}(y)
+	&=b_0\hat p_{-1}(x)\hat p_0(y)-b_{n+1}\hat p_n(x)\hat p_{n+1}(y)\\
+	&\qquad{}+b_{n+1}\hat p_{n+1}(x)\hat p_n(y)
+		-b_0\hat p_0(x)\hat p_{-1}(y),
 \end{align*}
+which implies the desired formula since $p_{-1}(x)=0$.
 \end{proof}
 
 
 \subsection{Legendre polynomials}
 The Legendre polynomials have the orthogonality property
 \begin{equation}\label{eq: legendre orthog}
-\int_{-1}^1 P_k(x)P_l(x)\,dx=\frac{2\delta_{kl}}{2k+1}
+\int_{-1}^1 P_j(x)P_k(x)\,dx=\frac{2\delta_{jk}}{2j+1}
 \end{equation}
 and the 3-term recurrence relation is
 \begin{equation}\label{eq: legendre 3 term}
-kP_k(x)=(2k-1)xP_{k-1}(x)-(k-1)P_{k-2}(x).
+jP_j(x)=(2j-1)xP_{j-1}(x)-(j-1)P_{j-2}(x).
 \end{equation}
 The normalised Legendre polynomials are
 \[
-\hat P_k(x)=\frac{P_k(x)}{\|P_k\|}=\biggl(\frac{2k+1}{2}\biggr)^{1/2}
-	P_k(x),
+\hat P_j(x)=\frac{P_j(x)}{\|P_j\|}=\biggl(\frac{2j+1}{2}\biggr)^{1/2}
+	P_j(x),
 \]
 and thus
-\begin{multline*}
-k\biggl(\frac{2}{2k+1}\biggr)^{1/2}\hat P_k(x)
-	=(2k-1)\biggl(\frac{2}{2k-1}\biggr)^{1/2}x\hat P_{k-1}(x)\\
-	-(k-1)\biggl(\frac{2}{2k-3}\biggr)^{1/2}\hat P_{k-2}(x),
-\end{multline*}
+\[
+j\biggl(\frac{2}{2j+1}\biggr)^{1/2}\hat P_j(x)
+	=(2j-1)\biggl(\frac{2}{2j-1}\biggr)^{1/2}x\hat P_{j-1}(x)\\
+	-(j-1)\biggl(\frac{2}{2j-3}\biggr)^{1/2}\hat P_{j-2}(x),
+\]
 or equivalently,
 \[
-\frac{k\hat P_k(x)}{\sqrt{2k+1}}=\sqrt{2k-1}\,x\hat P_{k-1}(x)
-	-\frac{k-1}{\sqrt{2k-3}}\,\hat P_{k-2}(x).
+\frac{j\hat P_j(x)}{\sqrt{2j+1}}=\sqrt{2j-1}\,x\hat P_{j-1}(x)
+	-\frac{k-j}{\sqrt{2j-3}}\,\hat P_{j-2}(x).
 \]
-Thus, the Legendre polynomials satisfy
+Thus, 
 \[
-b_{k+1}\hat P_k(x)=(x-a_k)\hat P_{k-1}(x)-b_k\hat P_{k-2}(x)
+b_j\hat P_j(x)=(x-a_j)\hat P_{j-1}(x)-b_{j-1}\hat P_{j-2}(x)
 \]
 where
 \[
-a_k=0\quad\text{and}\quad b_k=\frac{k-1}{\sqrt{(2k-1)(2k-3)}},
+a_j=0\quad\text{and}\quad b_j=\frac{j}{\sqrt{(2j-1)(2j+1)}},
 \]
-except that $b_1=\sqrt{\int_{-1}^1\,dx}=\sqrt{2}$.
+except that $b_0=\sqrt{\int_{-1}^1\,dx}=\sqrt{2}$.
 
 \section{Gauss quadrature}
 We now consider a quadrature rule
@@ -267,7 +277,7 @@ p_n(x_j)=0\quad\text{for $1\le j\le n$,}
 \]
 and as its weights the numbers
 \begin{equation}\label{eq: Gauss weights}
-w_j=\iprod{\ell_j,1}=\int\ell_j(x)\,d\mu(x)>0
+w_j=\iprod{\ell_j,1}=\|\ell_j\|^2>0
 	\quad\text{for $1\le j\le n$,}
 \end{equation}
 where $\ell_j$ is the $j$th Lagrange interpolation polynomial:
@@ -319,17 +329,17 @@ w_j=\sum_{k=1}^nw_k\ell_j(x_k)^2=\int\ell_j(x)^2\,d\mu(x)
 and the weights satisfy~\eqref{eq: Gauss weights}.
 \end{proof}
 
-The quadrature in the theorem above is called the $n$-point Gauss 
+The quadrature method in the above theorem is called the $n$-point Gauss 
 rule generated by the positive measure~$\mu$.
 
 Defining
 \[
 T_n=\begin{bmatrix}
-a_1&b_2   &       &       &\\
-b_2&a_2   &b_3    &       &\\
+a_1&b_1   &       &       &\\
+b_1&a_2   &b_2    &       &\\
    &\ddots&\ddots &\ddots &\\
-   &      &b_{n-1}&a_{n-1}&b_n\\
-   &      &       &b_n    &a_n
+   &      &b_{n-2}&a_{n-1}&b_{n-1}\\
+   &      &       &b_{n-1}&a_n
 \end{bmatrix}
 \quad\text{and}\quad
 \hatvecp_n(x)=\begin{bmatrix}
@@ -339,7 +349,7 @@ b_2&a_2   &b_3    &       &\\
 the equations~\eqref{eq: 3 term orthog} for $0\le j\le n-1$ are 
 equivalent to
 \begin{equation}\label{eq: matrix 3 term orthog}
-T_n\hatvecp_n(x)+b_{n+1}\hat p_n(x)\boldsymbol{e}_n=x\hatvecp_n(x).
+T_n\hatvecp_n(x)+b_n\hat p_n(x)\boldsymbol{e}_n=x\hatvecp_n(x).
 \end{equation}
 The points~$x_j$ and weights~$w_j$ may be computed by solving an 
 eigenproblem for the \emph{Jacobi matrix}~$T_n$.
@@ -356,7 +366,7 @@ denotes the eigenvector of~$T_n$ satisfying
 \[
 T_n\boldsymbol{v}_j=x_j\boldsymbol{v}_j
 \quad\text{and}\quad
-v_{1j}=\frac{1}{b_1},
+v_{1j}=\frac{1}{b_0},
 \]
 then the weight~$w_j$ corresponding to the $j$th Gauss point~$x_j$ 
 is given by
@@ -371,7 +381,7 @@ eigenvalues~$x_j$ of~$T_n$ coincide with zeros of~$p_n$ which,
 by Theorem~\ref{thm: Gauss rule}, coincide with the Gauss points.  
 Moreover, $\boldsymbol{v}_j=\hatvecp_n(x_j)$ is the eigenvector 
 of~$T_n$ that corresponds to the eigenvalue~$x_j$ and is scaled in 
-such a way that $v_{1k}=\hat p_0(x_j)=1/\|p_0\|=1/b_1$.
+such a way that $v_{1k}=\hat p_0(x_j)=1/\|p_0\|=1/b_0$.
 
 Since $p_n$ is monic with zeros $x_1$, $x_2$, \dots, $x_n$,
 \[
@@ -386,12 +396,12 @@ p_n'(x_j)=\prod_{\substack{k=1\\ k\ne j}}^n(x_j-x_k),
 showing that
 \[
 p_n(x)=p_n'(x_j)(x-x_j)\ell_j(x)\quad\text{where}\quad
-\ell_j(x)=\prod_{\substack{k-1\\ k\ne j}}\frac{x-x_k}{x_j-x_k}.
+\ell_j(x)=\prod_{\substack{k=1\\ k\ne j}}^n\frac{x-x_k}{x_j-x_k}.
 \]
 Hence, $\hat p_n(x)=\hat p_n'(x_j)(x-x_j)\ell_j(x)$ and so
 \begin{equation}\label{eq: w_j}
 w_j=\iprod{\ell_j,1}=\frac{1}{\hat p_n'(x_j)}
-	\int_a^b\frac{\hat p_n(x)}{x-x_j}\,w(x)\,dx
+	\int\frac{\hat p_n(x)}{x-x_j}\,w(x)\,dx.
 \end{equation}
 Putting $y=x_j$ in the Christoffel--Darboux identity of 
 Theorem~\ref{thm: Christoffel-Darboux} gives
@@ -402,19 +412,22 @@ Theorem~\ref{thm: Christoffel-Darboux} gives
 and after taking the inner product of both sides with~$p_0(x)=1$
 we obtain
 \[
-\frac{1}{b_{n+2}}\sum_{k=0}^n\iprod{\hat p_k,p_0}\hat p_k(x_j)
+\frac{1}{b_{n+1}}\sum_{k=0}^n\iprod{\hat p_k,p_0}\hat p_k(x_j)
 	=-\hat p_{n+1}(x_j)\int_a^b\frac{\hat p_n(x)}{x-x_j}\,w(x)\,dx.
 \]
 Here, $\iprod{\hat p_k,p_0}=0$ for~$k\ge1$ and 
-$\iprod{\hat p_0,p_0}=\iprod{p_0,p_0}/\|p_0\|=\|p_0\|$, so 
-by~\eqref{eq: w_j}
+$\iprod{\hat p_0,p_0}\hat p_0(x_j)=\iprod{p_0/\|p_0\|,p_0}/\|p_0\|=1$, so
 \[
-\frac{1}{b_{n+2}}=-\hat p_{n+1}(x_j)\hat p_n'(x_j)w_j.
+\frac{1}{b_{n+1}}=-\hat p_{n+1}(x_j)\int\frac{\hat p_n(x)}{x-x_j}\,w(x)\,dx.
+\]
+Thus, by~\eqref{eq: w_j},
+\[
+\frac{1}{b_{n+1}}=-\hat p_{n+1}(x_j)\hat p_n'(x_j)w_j.
 \]
 The Christoffel--Darboux identity also gives
 \begin{align*}
-\frac{1}{b_{n+2}}\sum_{k=0}^n\hat p_k(x_j)^2
-&=\lim_{y\to x_j}\frac{1}{b_{n+2}}\sum_{k=0}^n
+\frac{1}{b_{n+1}}\sum_{k=0}^n\hat p_k(x_j)^2
+&=\lim_{y\to x_j}\frac{1}{b_{n+1}}\sum_{k=0}^n
 	\hat p_k(x_j)\hat p_k(y)
 =\lim_{y\to x_j}\frac{\hat p_{n+1}(x_j)\hat p_n(y)}{x_j-y}\\
 &=-\hat p_{n+1}(x_j)\lim_{y\to x_j}
@@ -423,11 +436,23 @@ The Christoffel--Darboux identity also gives
 \end{align*}
 and therefore
 \[
-\frac{1}{w_j}=-b_{n+2}\hat p_{n+1}(x_j)\hat p_n'(x_j)
+\frac{1}{w_j}=-b_{n+1}\hat p_{n+1}(x_j)\hat p_n'(x_j)
 	=\sum_{k=0}^n\hat p_k(x_j)^2=\sum_{k=1}^n(v_{kj})^2,
 \]
 as claimed.
 \end{proof}
+\begin{corollary}
+Let $\hat{\boldsymbol{v}}_j=\boldsymbol{v}_j/\|\boldsymbol{v}_j\|$ denote the 
+$j$th normalised eigenvector.  Then, the Gauss quadrature weights are
+\[
+w_j=(b_0\hat v_{1j})^2\quad\text{for $1\le j\le n$.}
+\]
+\end{corollary}
+\begin{proof}
+We have $\|\boldsymbol{v}_j\|^2=\sum_{k=1}^n(v_{kj})^2=w_j^{-1}$ so
+$(\hat v_{1j})^2=(v_{1j})^2/\|\boldsymbol{v}_j\|^2=w_j/b_0^2$.
+\end{proof}
+
 
 
 \section{The modified Chebyshev algorithm}
@@ -440,27 +465,33 @@ Thus, $q_k\in\Poly_k$ is a monic polynomial satisfying
 \]
 In the usual way, we write the three-term recurrence relation as
 \begin{equation}\label{eq: 3 term q}
-q_k(x)=(x-\alpha_k)q_{k-1}(x)-\beta_k^2 q_{k-2}(x)
+q_k(x)=(x-\alpha_k)q_{k-1}(x)-\beta_{k-1}^2 q_{k-2}(x)
 	\quad\text{for $k=1$, $2$, $3$, \dots,}
 \end{equation}
 with
 \[
 q_0(x)=1\quad\text{and}\quad q_{-1}(x)=0,
 \]
-adopting the usual convention that $\beta_1=\sqrt{\int d\nu}$.
+adopting the usual convention that $\beta_0=\|q_0\|_\nu=\sqrt{\int d\nu}$.  
+Also, by~\eqref{eq: p hat recurrence}, the normalised orthogonal polynomials
+$\hat q_k(x)=q_k(x)/\|q_k\|_\nu$ satisfy
+\begin{equation}\label{eq: q hat recurrence}
+\beta_k\hat q_k(x)=(x-\alpha_k)\hat q_{k-1}(x)-\beta_{k-1}\hat q_{k-1}(x)
+\quad\text{for $k=1$, $2$, $3$, \dots.}
+\end{equation}
 
 Suppose that $p_0$, $p_1$, $p_2$, \dots is another sequence of monic 
 orthogonal polynomials generated by a positive measure $\mu$ and 
-having known coefficients $a_k$~and $b_k$ in the associated 
+having known coefficients $a_j$~and $b_j$ in the associated 
 three-term recurrence relation~\eqref{eq: 3 term pj}; thus
 \[
-\int p_k(x)f(x)\,d\mu(x)=0\quad\text{for all $f\in\Poly_{k-1}$.}
+\int p_j(x)f(x)\,d\mu(x)=0\quad\text{for all $f\in\Poly_{j-1}$.}
 \]
 Following Gautschi~\cite{Gautschi1982}, we consider the case when 
 $\alpha_k$~and $\beta_k$ are not known explicitly, but we are able to 
 find the modified moments
 \[
-\nu_l=\int\hat p_{l-1}(x)\,d\nu(x)\quad\text{for $1\le l\le 2n$,}
+\nu_j=\int\hat p_j(x)\,d\nu(x)\quad\text{for $0\le l\le 2n-1$,}
 \]
 where, as usual, $\hat p_0$, $\hat p_1$, $\hat p_2$, \dots are the 
 orthonormalised polynomials satisfying
@@ -515,7 +546,7 @@ the expressions for $\alpha_5$~and $\beta_5$.}
 
 \begin{theorem}
 The coefficients $\alpha_1$, $\alpha_2$, \dots, $\alpha_n$~and 
-$\beta_1$, $\beta_2$, \dots, $\beta_n$ in the three-term 
+$\beta_0$, $\beta_1$, $\beta_2$, \dots, $\beta_n$ in the three-term 
 recurrence relation~\eqref{eq: 3 term q} can be computed by putting
 \[
 \begin{aligned}
@@ -548,53 +579,57 @@ and, for $k=1$, $2$, \dots, $n-1$ and $k\le l\le2n-k-1$,
 \begin{proof}
 The integrals
 \[
-\sigma_{lk}=\int\hat p_{l-1}(x)\hat q_{k-1}(x)\,d\nu(x)
+\sigma_{jk}=\int\hat p_{j-1}(x)\hat q_{k-1}(x)\,d\nu(x)
 \]
-satisfy the initial conditions $\sigma_{l,0}=0$~and 
+satisfy the initial conditions $\sigma_{j,0}=0$~and 
 \[
-\sigma_{l,1}=\frac{\nu_l}{\|q_0\|}
-	=\frac{\nu_l}{\beta_1}  
-\quad\text{with $\beta_1=\sqrt{\nu_1}$.}
+\sigma_{j,1}=\frac{\nu_j}{\|q_0\|_\nu}
+	=\frac{\nu_j}{\beta_0}=\frac{\nu_j}{\sqrt{\nu_1}}.
 \]
-In addition, $\sigma_{lk}=0$ if $k>l$. 
-For $1\le k\le l$,
+In addition, $\sigma_{jk}=0$ if $k>j$. For $1\le k\le j$, we have 
+by~\eqref{eq: q hat recurrence}
 \begin{align*}
-\beta_{k+1}\sigma_{l+1,k+1}&=\int\hat p_l(x)\bigl[
-(x-\alpha_k)\hat q_{k-1}(x)-\beta_k\hat q_{k-2}(x)\bigr]\,d\nu(x)\\
-	&=\int(x-a_{l+1}+a_{l+1}-\alpha_k)
-		\hat p_l(x)\hat q_{k-1}(x)\,d\nu(x)
-		-\beta_k\sigma_{l+1,k-1}\\
-	&=\int\bigl[(x-a_{l+1})\hat p_l(x)-b_{l+1}\hat p_{l-1}(x)\bigr]
+\beta_k\sigma_{j+1,k+1}&=\int\hat p_j(x)\beta_k\hat q_k(x)\,d\nu
+	=\int\hat p_j(x)\bigl[
+	(x-\alpha_k)\hat q_{k-1}(x)-\beta_{k-1}\hat q_{k-2}(x)\bigr]\,d\nu(x)\\
+	&=\int(x-a_{j+1}+a_{j+1}-\alpha_k)
+		\hat p_j(x)\hat q_{k-1}(x)\,d\nu(x)
+		-\beta_{k-1}\sigma_{j+1,k-1}\\
+	&=\int\bigl[(x-a_{j+1})\hat p_j(x)-b_j\hat p_{j-1}(x)\bigr]
 		\hat q_{k-1}(x)\,d\nu(x)\\
-	&\qquad{}+(a_{l+1}-\alpha_k)\sigma_{l+1,k}
-		+b_{l+1}\sigma_{lk}-\beta_k\sigma_{l+1,k-1}
+	&\qquad{}+(a_{j+1}-\alpha_k)\sigma_{j+1,k}
+		+b_j\sigma_{jk}-\beta_{k-1}\sigma_{j+1,k-1}
 \end{align*}
-so
+and then by \eqref{eq: p hat recurrence},
 \begin{equation}\label{eq: beta sigma}
-\beta_{k+1}\sigma_{l+1,k+1}=b_{l+2}\sigma_{l+2,k}
-	+(a_{l+1}-\alpha_k)\sigma_ { l+1 , k }
-		+b_{l+1}\sigma_{lk}-\beta_k\sigma_{l+1,k-1}.
+\beta_k\sigma_{j+1,k+1}=b_{j+1}\sigma_{j+2,k}
+	+(a_{j+1}-\alpha_k)\sigma_{j+1,k}
+		+b_j\sigma_{jk}-\beta_{k-1}\sigma_{j+1,k-1}.
 \end{equation}
 
 By Theorem~\ref{thm: 3 term}, we have 
-$\beta_{k+1}=\|q_k\|/\|q_{k-1}\|$,
-and since $q_k(x)-p_k(x)$ has degree at most~$k-1$, the orthogonality 
-property of the $q_k$ implies that
-\[
-\int q_k(x)^2\,d\nu(x)=\int p_k(x)q_k(x)\,d\nu(x)
-	+\int\bigl[q_k(x)-p_k(x)\bigr]q_k(x)\,d\nu(x)
-\]
-or equivalently, $\|q_k\|^2=\|p_k\|\|q_k\|\sigma_{k+1,k+1}+0$ and so
+$\beta_k=\|q_k\|_\nu/\|q_{k-1}\|_\mu$, and since $q_k(x)-p_k(x)$ has degree at 
+most~$k-1$, the orthogonality property of the $q_k$ implies that
+\begin{align*}
+\|q_k\|_\nu^2&=\int q_k(x)^2\,d\nu(x)=\int p_k(x)q_k(x)\,d\nu(x)
+	+\int\bigl[q_k(x)-p_k(x)\bigr]q_k(x)\,d\nu(x)\\
+	&=\|p_k\|\|q_k\|_\nu\int\hat p_k(x)\hat q_k(x)\,d\nu(x)+0
+\end{align*}
+or equivalently, 
 \begin{equation}\label{eq: norm pk qk}
-\|q_k\|=\|p_k\|\sigma_{k+1,k+1}.
+\|q_k\|_\nu=\|p_k\|\sigma_{k+1,k+1}.
 \end{equation}
 Thus, for $k\ge1$,
 \[
-\beta_{k+1}=\frac{\|q_k\|}{\|q_{k-1}\|}
+\beta_k=\frac{\|q_k\|_\nu}{\|q_{k-1}\|_\nu}
 	=\frac{\|p_k\|}{\|p_{k-1}\|}\, 
 		\frac{\sigma_{k+1,k+1}}{\sigma_{kk}}
-	=b_{k+1}\,\frac{\sigma_{k+1,k+1}}{\sigma_{kk}}
+	=b_k\,\frac{\sigma_{k+1,k+1}}{\sigma_{kk}}
 \]
+
+
+
+
 and hence, by~\eqref{eq: beta sigma},
 \begin{align*}
 \beta_{k+1}^2&=\frac{b_{k+1}}{\sigma_{kk}}\biggl(
