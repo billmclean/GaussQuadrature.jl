@@ -187,7 +187,7 @@ b_{j-1}\hat p_{j-2}(x)+a_j\hat p_{j-1}(x)+b_j\hat p_j(x)=xp_{j-1}(x).
 \label{thm: Christoffel-Darboux}
 The monic orthogonal polynomials satisfy
 \[
-\frac{1}{b_{n+1}}\sum_{k=0}^n\hat p_k(x)\hat p_k(y)
+\frac{1}{b_{n+1}}\sum_{j=0}^n\hat p_j(x)\hat p_j(y)
 	=\frac{\hat p_{n+1}(x)\hat p_n(y)-\hat p_n(x)\hat p_{n+1}(y)}{x-y}
 	\quad\text{for $x\ne y$.}
 \]
@@ -195,22 +195,22 @@ The monic orthogonal polynomials satisfy
 \begin{proof}
 Using \eqref{eq: 3 term orthog}, we see that
 \begin{align*}
-(x-y)\hat p_{k-1}(x)&\hat p_{k-1}(y)
-	=[x\hat p_{k-1}(x)]\hat p_{k-1}(y)
-		-\hat p_{k-1}(x)[y\hat p_{k-1}(y)]\\
+(x-y)\hat p_{j-1}(x)&\hat p_{j-1}(y)
+	=[x\hat p_{j-1}(x)]\hat p_{j-1}(y)
+		-\hat p_{j-1}(x)[y\hat p_{j-1}(y)]\\
 	&=\bigl[
-	b_{k-1}\hat p_{k-2}(x)+a_k\hat p_{k-1}(x)+b_k\hat p_k(x)
-	\bigr]\hat p_{k-1}(y)\\
-	&\qquad{}-\hat p_{k-1}(x)\bigl[
-	b_{k-1}\hat p_{k-2}(y)+a_k\hat p_{k-1}(y)+b_k\hat p_k(y)\bigr]\\
-	&=\bigl[b_{k-1}\hat p_{k-2}(x)\hat p_{k-1}(y)
-		-b_k\hat p_{k-1}(x)\hat p_k(y)\bigr]\\
-	&\qquad{}+\bigl[b_k\hat p_k(x)\hat p_{k-1}(y)
-		-b_{k-1}\hat p_{k-1}(x)\hat p_{k-2}(y)\bigr]\\
+	b_{j-1}\hat p_{j-2}(x)+a_j\hat p_{j-1}(x)+b_j\hat p_j(x)
+	\bigr]\hat p_{j-1}(y)\\
+	&\qquad{}-\hat p_{j-1}(x)\bigl[
+	b_{j-1}\hat p_{j-2}(y)+a_j\hat p_{j-1}(y)+b_j\hat p_j(y)\bigr]\\
+	&=\bigl[b_{j-1}\hat p_{j-2}(x)\hat p_{j-1}(y)
+		-b_j\hat p_{j-1}(x)\hat p_j(y)\bigr]\\
+	&\qquad{}+\bigl[b_k\hat p_j(x)\hat p_{j-1}(y)
+		-b_{j-1}\hat p_{j-1}(x)\hat p_{j-2}(y)\bigr]\\
 \end{align*}
 and so
 \begin{align*}
-(x-y)\smash[b]{\sum_{k=1}^{n+1}}\hat p_{k-1}(x)\hat p_{k-1}(y)
+(x-y)\smash[b]{\sum_{j=1}^{n+1}}\hat p_{j-1}(x)\hat p_{j-1}(y)
 	&=b_0\hat p_{-1}(x)\hat p_0(y)-b_{n+1}\hat p_n(x)\hat p_{n+1}(y)\\
 	&\qquad{}+b_{n+1}\hat p_{n+1}(x)\hat p_n(y)
 		-b_0\hat p_0(x)\hat p_{-1}(y),
@@ -491,7 +491,7 @@ Following Gautschi~\cite{Gautschi1982}, we consider the case when
 $\alpha_k$~and $\beta_k$ are not known explicitly, but we are able to 
 find the modified moments
 \[
-\nu_j=\int\hat p_j(x)\,d\nu(x)\quad\text{for $0\le l\le 2n-1$,}
+\nu_j=\int\hat p_j(x)\,d\nu(x)\quad\text{for $0\le j\le 2n-1$,}
 \]
 where, as usual, $\hat p_0$, $\hat p_1$, $\hat p_2$, \dots are the 
 orthonormalised polynomials satisfying
@@ -502,44 +502,46 @@ The next theorem summarises the modified Chebyshev algorithm for
 computing $\alpha_k$~and $\beta_k$ for $1\le k\le n$.
 
 \begin{figure}
-\caption{The dots correspond to the $\sigma_{lk}$ computed in the 
-case~$n=5$.  The parallelogram indicates the $\sigma_{lk}$ used in 
-the expressions for $\alpha_5$~and $\beta_5$.}
+\caption{The dots correspond to the $\sigma_{jk}$ computed in the
+case~$n=5$.  The enclosed dots correspond to the $\sigma_{jk}$ appearing in the
+expressions for $\alpha_5$~and $\beta_5$.}
 \begin{center}
 \begin{tikzpicture}[scale=1.0]
 \draw[->] (0, -1) -- (0, 6);
 \node[above left] at (0, 6) {$k$};
-\draw[->] (-1, 0) -- (11, 0);
-\node[right] at (11, 0) {$l$};
-\foreach \x in {2, 3, ..., 9}
+\draw[->] (-1, 0) -- (12, 0);
+\node[right] at (12, 0) {$j$};
+\foreach \x in {2, 3, ..., 10}
     \draw[fill=blue] (\x, 0) circle(0.10cm);
-\foreach \x in {1, 2, ..., 10}
+\foreach \x in {1, 2, ..., 11}
     \draw[fill=blue] (\x, 1) circle(0.10cm);
-\foreach \x in {2, 3, ..., 9}
+\foreach \x in {2, 3, ..., 10}
     \draw[fill=red] (\x, 2) circle(0.10cm);
-\foreach \x in {3, 4, ..., 8}
+\foreach \x in {3, 4, ..., 9}
     \draw[fill=red] (\x, 3) circle(0.10cm);
-\foreach \x in {4, 5, 6, 7}
+\foreach \x in {4, 5, ..., 8}
     \draw[fill=red] (\x, 4) circle(0.10cm);
-\foreach \x in {5, 6}
+\foreach \x in {5, 6, 7}
     \draw[fill=red] (\x, 5) circle(0.10cm);
 \foreach \y in {1, 2, 3, 4, 5}
     {
     \draw[thin] (-0.075, \y) -- (0, \y);
     \node[left] at (0.0, \y) {$\y$};
     }
-\foreach \x in {1, 2, 3, ..., 9, 10}
+\draw[thin] (1, -0.075) -- (1,0);
+\draw[thin] (11, -0.075) -- (11,0);
+\foreach \x in {1, 2, 3, ..., 11}
     \node[below] at (\x, -0.04) {$\x$};
-\draw[-] (10, 5) -- (10, 7);
-\draw[-] (9, 6) -- (11, 6);
-\draw[fill=blue] (9, 6) circle(0.10cm);
+\draw[-] (11, 5) -- (11, 7);
+\draw[-] (10, 6) -- (12, 6);
 \draw[fill=blue] (10, 6) circle(0.10cm);
 \draw[fill=blue] (11, 6) circle(0.10cm);
-\draw[fill=blue] (10, 5) circle(0.10cm);
-\draw[fill=red]  (10, 7) circle(0.10cm);
-\node at (9, 6.5) {stencil};
-\draw[-] (3.0, 3.5) -- (5.0, 5.5) -- (7.0, 5.5) 
-      -- (5.0, 3.5) -- (3.0, 3.5);
+\draw[fill=blue] (12, 6) circle(0.10cm);
+\draw[fill=blue] (11, 5) circle(0.10cm);
+\draw[fill=red]  (11, 7) circle(0.10cm);
+\node[right] at (11, 6.5) {stencil for $\sigma_{jk}$};
+\draw[-] (4.5,3.5) -- (6.5,3.5) -- (6.5,4.5) -- (7.5,4.5)
+	  -- (7.5,5.5) -- (4.5,5.5) -- (4.5,3.5);
 \end{tikzpicture}
 \end{center}
 \end{figure}
@@ -550,29 +552,25 @@ $\beta_0$, $\beta_1$, $\beta_2$, \dots, $\beta_n$ in the three-term
 recurrence relation~\eqref{eq: 3 term q} can be computed by putting
 \[
 \begin{aligned}
-\sigma_{l,0}&=0&&\text{for $2\le l\le 2n-1$},\\
-\beta_1&=\sqrt{\nu_1},\\
-\sigma_{l,1}&=\frac{\nu_l}{\beta_1}&
-	&\text{for $1\le l\le2n$},\\
-\alpha_1&=a_1+b_2\,\frac{\sigma_{21}}{\sigma_{11}},
+\sigma_{j,0}&=0\quad\text{and}\quad\sigma_{j,1}=\frac{\nu_j}{\beta_0}
+	\quad\text{for $1\le j\le2n+1$},\\
+\alpha_1&=a_1+b_1\,\frac{\sigma_{21}}{\sigma_{11}},\\
+\beta_0&=\sqrt{b_0\nu_0},\\
+\beta_1&=b_1\sqrt{1+\bigl(b_2\sigma_{3,1} +(a_2-\alpha_1)\sigma_{2,1}
+	-\beta_0\sigma_{2,0}\bigr)/(b_1\sigma_{1,1})},
 \end{aligned} 
 \]
-and, for $k=1$, $2$, \dots, $n-1$ and $k\le l\le2n-k-1$, 
+and then, for $k=2$, $3$, \dots, $n$ and $k\le j\le2n+2-k$,
 \[
 \begin{aligned}
-\beta_{k+1}&=b_{k+1}\sqrt{1
-		+\frac{b_{k+2}}{b_{k+1}}\,\frac{\sigma_{k+2,k}}{\sigma_{kk}}
-		+\frac{a_{k+1}-\alpha_k}{b_{k+1}}\,
-			\frac{\sigma_{k+1,k}}{\sigma_{kk}}
-		-\frac{\beta_k}{b_{k+1}}\,
-			\frac{\sigma_{k+1,k-1}}{\sigma_{kk}}},\\
-\sigma_{l+1,k+1}&=\frac{b_{l+2}}{\beta_{k+1}}\,\sigma_{l+2,k}
-	+\frac{a_{l+1}-\alpha_k}{\beta_{k+1}}\sigma_{l+1,k}
-	+\frac{b_{l+1}}{\beta_{k+1}}\,\sigma_{lk}
-	-\frac{\beta_k}{\beta_{k+1}}\,\sigma_{l+1,k-1},\\
-\alpha_{k+1}&=a_{k+1}+b_{k+2}\,
-	\frac{\sigma_{k+2,k+1}}{\sigma_{k+1,k+1}}
-	-\beta_{k+1}\,\frac{\sigma_{k+1,k}}{\sigma_{k+1,k+1}}.
+\sigma_{j,k}&=\frac{1}{\beta_{k-1}}\Bigl(b_j\sigma_{j+1,k-1}
+	+(a_j-\alpha_{k-1})\sigma_{j,k-1}+b_{j-1}\sigma_{j-1,k-1}
+	-\beta_{k-2}\sigma_{j,k-2}\Bigr),\\
+\alpha_k&=a_k+\bigl(b_k\sigma_{k+1,k}
+	-\beta_{k-1}\sigma_{k,k-1}\bigr)/\sigma_{k,k},\\
+\beta_k&=b_k\sqrt{1+\bigl(b_{k+1}\sigma_{k+2,k}
+		+(a_{k+1}-\alpha_k)\sigma_{k+1,k}
+		-\beta_{k-1}\sigma_{k+1,k-1}\bigr)/(b_k\sigma_{k,k})}.
 \end{aligned}
 \]
 \end{theorem}
@@ -581,34 +579,41 @@ The integrals
 \[
 \sigma_{jk}=\int\hat p_{j-1}(x)\hat q_{k-1}(x)\,d\nu(x)
 \]
-satisfy the initial conditions $\sigma_{j,0}=0$~and 
+satisfy the initial conditions $\sigma_{j,0}=0$, with
 \[
-\sigma_{j,1}=\frac{\nu_j}{\|q_0\|_\nu}
-	=\frac{\nu_j}{\beta_0}=\frac{\nu_j}{\sqrt{\nu_1}}.
+\beta_0^2=\|q_0\|^2=\int d\nu=\|p_0\|\int\hat p_0\,d\nu=b_0\nu_0
 \]
-In addition, $\sigma_{jk}=0$ if $k>j$. For $1\le k\le j$, we have 
-by~\eqref{eq: q hat recurrence}
+and
+\[
+\sigma_{j,1}=\int\hat p_{j-1}(x)\hat q_0(x)\,d\nu(x)=\frac{\nu_1}{\|q_0\|}
+=\frac{\nu_{j-1}}{\beta_0},
+\]
+In addition, $\sigma_{jk}=0$ if $k>j$.
+
+For $k\ge2$ and $j\ge1$, we have by~\eqref{eq: q hat recurrence}
 \begin{align*}
-\beta_k\sigma_{j+1,k+1}&=\int\hat p_j(x)\beta_k\hat q_k(x)\,d\nu
-	=\int\hat p_j(x)\bigl[
-	(x-\alpha_k)\hat q_{k-1}(x)-\beta_{k-1}\hat q_{k-2}(x)\bigr]\,d\nu(x)\\
-	&=\int(x-a_{j+1}+a_{j+1}-\alpha_k)
-		\hat p_j(x)\hat q_{k-1}(x)\,d\nu(x)
-		-\beta_{k-1}\sigma_{j+1,k-1}\\
-	&=\int\bigl[(x-a_{j+1})\hat p_j(x)-b_j\hat p_{j-1}(x)\bigr]
-		\hat q_{k-1}(x)\,d\nu(x)\\
-	&\qquad{}+(a_{j+1}-\alpha_k)\sigma_{j+1,k}
-		+b_j\sigma_{jk}-\beta_{k-1}\sigma_{j+1,k-1}
+\beta_{k-1}\sigma_{j,k}&=\int\hat p_{j-1}(x)\beta_{k-1}\hat q_{k-1}(x)\,d\nu
+	=\int\hat p_{j-1}(x)\bigl[
+	(x-\alpha_{k-1})\hat q_{k-2}(x)-\beta_{k-2}\hat q_{k-3}(x)\bigr]\,d\nu(x)\\
+	&=\int(x-a_j+a_j-\alpha_{k-1})
+		\hat p_{j-1}(x)\hat q_{k-2}(x)\,d\nu(x)
+		-\beta_{k-2}\sigma_{j,k-2}\\
+	&=\int\bigl[(x-a_j)\hat p_{j-1}(x)-b_{j-1}\hat p_{j-2}(x)\bigr]
+		\hat q_{k-2}(x)\,d\nu(x)\\
+	&\qquad{}+(a_j-\alpha_{k-1})\sigma_{j,k-1}
+		+b_{j-1}\sigma_{j-1,k-1}-\beta_{k-2}\sigma_{j,k-2}
 \end{align*}
 and then by \eqref{eq: p hat recurrence},
 \begin{equation}\label{eq: beta sigma}
-\beta_k\sigma_{j+1,k+1}=b_{j+1}\sigma_{j+2,k}
-	+(a_{j+1}-\alpha_k)\sigma_{j+1,k}
-		+b_j\sigma_{jk}-\beta_{k-1}\sigma_{j+1,k-1}.
+\beta_{k-1}\sigma_{j,k}=b_j\sigma_{j+1,k-1}
+	+(a_j-\alpha_{k-1})\sigma_{j,k-1}
+		+b_{j-1}\sigma_{j-1,k-1}-\beta_{k-2}\sigma_{j,k-2}.
 \end{equation}
+After dividing by~$\beta_{k-1}$, the desired formula for~$\sigma_{j,k}$
+follows.
 
 By Theorem~\ref{thm: 3 term}, we have 
-$\beta_k=\|q_k\|_\nu/\|q_{k-1}\|_\mu$, and since $q_k(x)-p_k(x)$ has degree at 
+$\beta_k=\|q_k\|_\nu/\|q_{k-1}\|_\nu$, and since $q_k(x)-p_k(x)$ has degree at
 most~$k-1$, the orthogonality property of the $q_k$ implies that
 \begin{align*}
 \|q_k\|_\nu^2&=\int q_k(x)^2\,d\nu(x)=\int p_k(x)q_k(x)\,d\nu(x)
@@ -626,68 +631,68 @@ Thus, for $k\ge1$,
 		\frac{\sigma_{k+1,k+1}}{\sigma_{kk}}
 	=b_k\,\frac{\sigma_{k+1,k+1}}{\sigma_{kk}}
 \]
-
-
-
-
-and hence, by~\eqref{eq: beta sigma},
+and hence by~\eqref{eq: beta sigma},
 \begin{align*}
-\beta_{k+1}^2&=\frac{b_{k+1}}{\sigma_{kk}}\biggl(
-	b_{k+2}\sigma_{k+2,k}+(a_{k+1}-\alpha_k)\sigma_{k+1,k}
-	+b_{k+1}\sigma_{kk}-\beta_k\sigma_{k+1,k-1}\biggr)\\
-	&=b_{k+1}^2+\frac{b_{k+1}}{\sigma_{kk}}\biggl(
-	b_{k+2}\sigma_{k+2,k}+(a_{k+1}-\alpha_k)\sigma_{k+1,k}
-	-\beta_k\sigma_{k+1,k-1}\biggr)\\
-	&=b_{k+1}^2\biggl(1
-		+\frac{b_{k+2}}{b_{k+1}}\,\frac{\sigma_{k+2,k}}{\sigma_{kk}}
-		+\frac{a_{k+1}-\alpha_k}{b_{k+1}}\,
+\beta_k^2&=\frac{b_k}{\sigma_{kk}}\,\sigma_{k+1,k+1}
+	=\frac{b_k}{\sigma_{kk}}\biggl(
+	b_{k+1}\sigma_{k+2,k}+(a_{k+1}-\alpha_k)\sigma_{k+1,k}
+	+b_k\sigma_{kk}-\beta_{k-1}\sigma_{k+1,k-1}\biggr)\\
+	&=b_k^2+\frac{b_k}{\sigma_{kk}}\biggl(
+	b_{k+1}\sigma_{k+2,k}+(a_{k+1}-\alpha_k)\sigma_{k+1,k}
+	-\beta_{k-1}\sigma_{k+1,k-1}\biggr)\\
+	&=b_k^2\biggl(1
+		+\frac{b_{k+1}}{b_k}\,\frac{\sigma_{k+2,k}}{\sigma_{kk}}
+		+\frac{a_{k+1}-\alpha_k}{b_k}\,
 			\frac{\sigma_{k+1,k}}{\sigma_{kk}}
-		-\frac{\beta_k}{b_{k+1}}\,
+		-\frac{\beta_{k-1}}{b_k}\,
 			\frac{\sigma_{k+1,k-1}}{\sigma_{kk}}\biggr).
 \end{align*}
+The desired formula for~$\beta_k$ now follows.
 
 Theorem~\ref{thm: 3 term} also gives
-$\alpha_{k+1}=\int x\hat q_k(x)^2\,d\nu(x)$ so
+$\alpha_k=\int x\hat q_{k-1}(x)^2\,d\nu(x)$ for~$k\ge1$, so
 \[
-\|q_k\|\alpha_{k+1}=\int x\bigl[q_k(x)-p_k(x)\bigr]
-	\hat q_k(x)\,d\nu(x)+\int xp_k(x)\hat q_k(x)\,d\nu(x),
+\|q_{k-1}\|\alpha_k=\int x\bigl[q_{k-1}(x)-p_{k-1}(x)\bigr]
+	\hat q_{k-1}(x)\,d\nu(x)+\int xp_{k-1}(x)\hat q_{k-1}(x)\,d\nu(x),
 \]
 with the first term on the right equal to
 \begin{align*}
-\int\bigl[&q_k(x)-p_k(x)\bigr](x-\alpha_{k+1})
-	\hat q_k(x)\,d\nu(x)\\
+\int\bigl[&q_{k-1}(x)-p_{k-1}(x)\bigr](x-\alpha_k)
+	\hat q_{k-1}(x)\,d\nu(x)\\
 	&\qquad\qquad\qquad{}
-	+\alpha_{k+1}\int 
-		\bigl[q_k(x)-p_k(x)\bigr]\hat q_k(x)\,d\nu(x)\\
-	&=\int\bigl[q_k(x)-p_k(x)\bigr]
-	\bigl[\beta_{k+2}\hat q_{k+1}(x)
-		+\beta_{k+1}\hat q_{k-1}(x)\bigr] 
-		\,d\nu(x)+\alpha_{k+1}\times0\\
-	&=-\beta_{k+1}\int p_k(x)\hat q_{k-1}(x)\,d\nu(x)
-	=-\beta_{k+1}\|p_k\|\sigma_{k+1,k}
+	+\alpha_k\int
+		\bigl[q_{k-1}(x)-p_{k-1}(x)\bigr]\hat q_{k-1}(x)\,d\nu(x)\\
+	&=\int\bigl[q_{k-1}(x)-p_{k-1}(x)\bigr]
+	\bigl[\beta_k\hat q_k(x)
+		+\beta_{k-1}\hat q_{k-2}(x)\bigr]
+		\,d\nu(x)+\alpha_k\times0\\
+	&=-\beta_{k-1}\int p_{k-1}(x)\hat q_{k-2}(x)\,d\nu(x)
+	=-\beta_{k-1}\|p_{k-1}\|\sigma_{k,k-1}
 \end{align*}
-and second equal to
+and the second equal to
 \begin{align*}
 \int\bigl[
-	&(x-a_{k+1})p_k(x)-b_{k+1}^2p_{k-1}(x)\bigr]\hat q_k(x)\,d\nu(x)\\
+	&(x-a_k)p_{k-1}(x)-b_{k-1}^2p_{k-2}(x)\bigr]\hat q_{k-1}(x)\,d\nu(x)\\
 	&\qquad{}+\int\bigl[
-		a_{k+1}p_k(x)+b_{k+1}^2p_{k-1}(x)\bigr]\hat q_k(x)\,d\nu(x)\\
-	&=\int p_{k+1}(x)\hat q_k(x)\,d\nu(x)
-		+a_{k+1}\int p_k(x)\hat q_k(x)\,d\nu(x)\\
-	&=\|p_{k+1}\|\sigma_{k+2,k+1}+a_{k+1}\|p_k\|\sigma_{k+1,k+1}.
+		a_kp_{k-1}(x)+b_{k-1}^2p_{k-2}(x)\bigr]\hat q_{k-1}(x)\,d\nu(x)\\
+	&=\int p_k(x)\hat q_{k-1}(x)\,d\nu(x)
+		+a_k\int p_{k-1}(x)\hat q_{k-1}(x)\,d\nu(x)\\
+	&=\|p_k\|\sigma_{k+1,k}+a_k\|p_{k-1}\|\sigma_{k,k}.
 \end{align*}
 Recalling \eqref{eq: norm pk qk}, we see that
-\begin{multline*}
-\|p_k\|\sigma_{k+1,k+1}\alpha_{k+1}
-	=a_{k+1}\|p_k\|\sigma_{k+1,k+1}+\|p_{k+1}\|\sigma_{k+2,k+1}\\
-		-\beta_{k+1}\|p_k\|\sigma_{k+1,k}
-\end{multline*}
-and therefore, since $\|p_{k+1}\|/\|p_k\|=b_{k+2}$,
 \[
-\alpha_{k+1}=a_{k+1}+b_{k+2}\,
-	\frac{\sigma_{k+2,k+1}}{\sigma_{k+1,k+1}}
-	-\beta_{k+1}\,\frac{\sigma_{k+1,k}}{\sigma_{k+1,k+1}}.
+\|p_{k-1}\|\sigma_{k,k}\alpha_k=\|q_{k-1}\|_\nu\alpha_k
+	=-\beta_{k-1}\|p_{k-1}\|\sigma_{k,k-1}
+	+\|p_k\|\sigma_{k+1,k}+a_k\|p_{k-1}\|\sigma_{k,k}
 \]
+and therefore, since $\|p_k\|/\|p_{k-1}\|=b_k$,
+\[
+\sigma_{k,k}\alpha_k=a_k\sigma_{k,k}+b_k
+	\sigma_{k+1,k}
+	-\beta_{k-1}\sigma_{k,k-1}}.
+\]
+The desired formula for~$\alpha_k$  (including the case $k=1$ when
+$\sigma_{1,0}=0$) follows after dividing by~$\sigma_{k,k}$.
 \end{proof}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{A log weight}
@@ -703,7 +708,7 @@ Legendre polynomials satisfy
 \]
 we see that the polynomials
 \[
-\hat p_l(x)=\sqrt{2l+1}\,P_l(2x-1)
+\hat p_j(x)=\sqrt{2j+1}\,P_j(2x-1)
 \]
 satisfy
 \[
@@ -711,38 +716,37 @@ satisfy
 \]
 Thus
 \[
-\frac{\nu_l}{\sqrt{2l-1}}=\int_0^1 P_{l-1}(2x-1)x^\rho\log x^{-1}\,dx.
+\frac{\nu_j}{\sqrt{2j+1}}=\int_0^1 P_j(2x-1)x^\rho\log x^{-1}\,dx.
 \]
 Following \cite{Gautschi1979}, we make the substitution $y=2x-1$
 and obtain
-\begin{multline*}
-\frac{\nu_l}{\sqrt{2l-1}}=\frac{\log 2}{2^{\rho+1}}\int_{-1}^1 
-	P_{l-1}(y)(y+1)^\rho\,dy\\
-	-\frac{1}{2^{\rho+1}}\int_{-1}^1 
-		P_{l-1}(y)(y+1)^\rho\log(y+1)\,dy.
-\end{multline*}
+\[
+\frac{\nu_j}{\sqrt{2j-1}}=\frac{\log 2}{2^{\rho+1}}\int_{-1}^1
+	P_{j-1}(y)(y+1)^\rho\,dy
+	-\frac{1}{2^{\rho+1}}\int_{-1}^1 P_{j-1}(y)(y+1)^\rho\log(y+1)\,dy.
+\]
 It is known that
 \[
-\int_{-1}^1 P_{l-1}(y)(y+1)^\rho\,dy
+\int_{-1}^1 P_j(y)(y+1)^\rho\,dy
 	=\frac{2^{\rho+1}\Gamma(\rho+1)^2}%
-{\Gamma(\rho+1+l)\Gamma(\rho+2-l)},
+{\Gamma(\rho+2+j)\Gamma(\rho+1-j)},
 \]
 and by logarithmic differentiation of this identity with respect 
 to~$\rho$, we find that
 \begin{multline*}
-\int_{-1}^1 P_{l-1}(y)(y+1)^\rho\log(y+1)\,dy
+\int_{-1}^1 P_j(y)(y+1)^\rho\log(y+1)\,dy
 	=\frac{2^{\rho+1}\Gamma(\rho+1)^2}%
-{\Gamma(\rho+1+l)\Gamma(\rho+2-l)}\\
+{\Gamma(\rho+2+j)\Gamma(\rho+1-j)}\\
 	\times\bigl[\log2+2\psi(\rho+1)-\psi(\rho+1+l)-\psi(\rho+2-l)
 	\bigr],
 \end{multline*}
 where $\psi(x)=\Gamma'(x)/\Gamma(x)$ denotes the digamma function.
 Thus,
-\begin{multline}\label{eq: mu l}
-\frac{\nu_l}{\sqrt{2l-1}}
-	=\frac{\Gamma(\rho+1)^2}{\Gamma(\rho+1+l)\Gamma(\rho+2-l)} \\
-	\times\bigl[\psi(\rho+1+l)+\psi(\rho+2-l)-2\psi(\rho+1)\bigr].
-\end{multline}
+\begin{equation}\label{eq: mu l}
+\frac{\nu_j}{\sqrt{2j+1}}
+	=\frac{\Gamma(\rho+1)^2}{\Gamma(\rho+2+j)\Gamma(\rho+1-j)}
+	\times\bigl[\psi(\rho+2+j)+\psi(\rho+1-j)-2\psi(\rho+1)\bigr].
+\end{equation}
 Using the reflection formulae
 \[
 \Gamma(1-z)\Gamma(z)=\frac{\pi}{\sin\pi z}
@@ -758,8 +762,8 @@ we find that
 for $m\in\{0,1,2,\dots\}$.  Thus, if $\rho=r\in\{0,1,2,\dots\}$
 then
 \[
-\frac{\nu_l}{\sqrt{2l-1}}=(-1)^{l-1-r}\,\frac{(r!)^2(l-r-2)!}{(l+r)!}
-	\quad\text{for $l\in\{r+2, r+3, r+4, \dots\}$.}
+\frac{\nu_j}{\sqrt{2j+1}}=(-1)^{j-r}\,\frac{(r!)^2(j-r-1)!}{(j+1+r)!}
+	\quad\text{for $j\in\{r+1, r+2, r+3, \dots\}$.}
 \]
 Otherwise, we can use the functional identities
 \[
@@ -772,86 +776,90 @@ to simplify \eqref{eq: mu l}.  In fact,
 \]
 and
 \[
-\Gamma(\rho+1+l)=(\rho+l)(\rho+l-1)\cdots(\rho+2)(\rho+1)
+\Gamma(\rho+2+j)=(\rho+j+1)(\rho+j)\cdots(\rho+2)(\rho+1)
 	\Gamma(\rho+1),
 \]
 so
 \begin{align*}
-\frac{\Gamma(\rho+1)^2}{\Gamma(\rho+1+l)\Gamma(\rho+2-l)}
-	&=\frac{\rho(\rho-1)\cdots(\rho+2-l)}%
-{(\rho+l)(\rho+l-1)\cdots(\rho+2)(\rho+1)}\\
-	&=\frac{1}{\rho+1}\prod_{j=1}^{l-1}\frac{\rho+1-j}{\rho+1+j}.
+\frac{\Gamma(\rho+1)^2}{\Gamma(\rho+2+j)\Gamma(\rho+1-j)}
+	&=\frac{\rho(\rho-1)\cdots(\rho+1-j)}%
+{(\rho+j+1)(\rho+j)\cdots(\rho+2)(\rho+1)}\\
+	&=\frac{1}{\rho+1}\prod_{k=1}^j\frac{\rho+1-k}{\rho+1+k}.
 \end{align*}
 Moreover,
 \[
-\psi(\rho+1+l)=\psi(\rho+1)+\frac{1}{\rho+1}+\frac{1}{\rho+2}
-	+\cdots+\frac{1}{\rho+l}
+\psi(\rho+2+j)=\psi(\rho+1)+\frac{1}{\rho+1}+\frac{1}{\rho+2}
+	+\cdots+\frac{1}{\rho+j+1}
 \]
 and
 \[
-\psi(\rho+2-l)=\psi(\rho+1)-\frac{1}{\rho}-\frac{1}{\rho-1}
-	-\cdots-\frac{1}{\rho-(l-2)},
+\psi(\rho+1-j)=\psi(\rho+1)-\frac{1}{\rho}-\frac{1}{\rho-1}
+	-\cdots-\frac{1}{\rho-(j-1)},
 \]
 so
 \[
-\psi(\rho+1+l)+\psi(\rho+2-l)-2\psi(\rho+1)
-	=\frac{1}{\rho+1}+\sum_{j=1}^{l-1}\biggl(\frac{1}{\rho+1+j}
-		-\frac{1}{\rho+1-j}\biggr).
+\psi(\rho+2+j)+\psi(\rho+1-j)-2\psi(\rho+1)
+	=\frac{1}{\rho+1}+\sum_{k=1}^j\biggl(\frac{1}{\rho+1+k}
+		-\frac{1}{\rho+1-k}\biggr).
 \]
 Hence,
 \begin{equation}\label{eq: nul}
-\frac{\nu_l}{\sqrt{2l-1}}=\frac{1}{\rho+1}\biggl[\frac{1}{\rho+1}
-	+\sum_{j=1}^{l-1}\biggl(\frac{1}{\rho+1+j}
-		-\frac{1}{\rho+1-j}\biggr)\biggr]
-	\prod_{k=1}^{l-1}\frac{\rho+1-k}{\rho+1+k}.
+\frac{\nu_j}{\sqrt{2j+1}}=\frac{1}{\rho+1}\biggl(\frac{1}{\rho+1}
+	-\sum_{k=1}^j\frac{2k}{(\rho+1+k)(\rho+1-k)}\biggr)
+	\prod_{l=1}^j\frac{\rho+1-l}{\rho+1+l}.
 \end{equation}
 
 Choose a non-negative integer~$r$ such that $|\rho-r|$ is as small as 
 possible, and define
 \[
-B_l=\prod_{\substack{k=1\\ k\ne r+1}}^{l-1}\frac{\rho+1-k}{\rho+1+k}
+B_j=\frac{1}{1+\rho}\prod_{\substack{l=1\\ l\ne r+1}}^j\frac{\rho+1-l}{\rho+1+l}
 \]
 so that
 \[
-\prod_{k=1}^{l-1}\frac{\rho+1+k}{\rho+1-k}
-	=\frac{\rho-r}{\rho+r+2}\,B_l\quad\text{for $l\ge r+2$.}
+\frac{1}{1+\rho}\prod_{l=1}^j\frac{\rho+1-l}{\rho+1+l}
+	=\frac{\rho-r}{\rho+r+2}\,B_j\quad\text{for $j\ge r+1$.}
 \]
 We can rewrite \eqref{eq: nul} as
 \[
-\frac{\nu_l}{\sqrt{2l-1}}=\frac{B_l}{1+\rho}\biggl[
-	\frac{1}{1+\rho}+\sum_{j=1}^{l-1}
-	\biggl(\frac{1}{\rho+1+j}-\frac{1}{\rho+1-j}\biggr)
-		\biggr]\quad\text{for $1\le l\le r+1$,}
+\frac{\nu_j}{\sqrt{2j+1}}=B_j\biggl(
+	\frac{1}{1+\rho}-\sum_{k=1}^j
+	\frac{2k}{(\rho+1+k)(\rho+1-k)}
+		\biggr)\quad\text{for $0\le j\le r$,}
 \]
-with
-\begin{multline*}
-\frac{\nu_l}{\sqrt{2l-1}}=\frac{B_l}{1+\rho}\,\frac{\rho-r}{\rho+r+2}
-	\biggl[\frac{1}{1+\rho}
-	+\sum_{\substack{j=1\\ j\ne r+1}}^{l-1}\biggl(
-	\frac{1}{\rho+1+j}-\frac{1}{\rho+1-j}\biggr)\biggr]\\
-+\frac{B_l}{1+\rho}\,\frac{1}{\rho+r+2}
-	\biggl(\frac{\rho-r}{\rho+r+2}-1\biggr)
-		\quad\text{for $l\ge r+2$.}
-\end{multline*}
-
-
-If $\rho=r$ then we can use the formula~\eqref{eq: nul} to compute
-$\nu_l$ for $1\le l\le r+1$.  Next, for $l=r+2$,
+and for $j\ge r+1$ as
 \[
-\frac{\nu_{r+2}}{\sqrt{2r+3}}
-	=-\,\frac{(r!)^2}{(2r+2)!}=\frac{-1}{2(r+1) }
-	\prod_{j=1}^r\frac{j}{2(2j+1)},
-\]
-and after that we have the recursion
-\[
-\frac{\nu_{l+1}}{\sqrt{2l+1}}=-\frac{l-r-1}{l+r+1}\,
-	\frac{\nu_l}{\sqrt{2l-1}}
-	\quad\text{for $l\ge r+2$,}
+\frac{\nu_j}{\sqrt{2j+1}}=B_j\,\frac{\rho-r}{\rho+r+2}
+	\biggl(\frac{1}{1+\rho}
+	-\sum_{\substack{k=1\\ k\ne r+1}}^j
+	\frac{2k}{(\rho+1+k)(\rho+1-k)}-\frac{2(r+1)}{(\rho+2+\rho)(\rho-r)}\biggr)
 \]
 or equivalently,
 \[
-\nu_{l+1}=-\nu_l\times\frac{l-r-1}{l+r+1}\,\sqrt{\frac{2l+1}{2l-1}}
-	\quad\text{for $l\ge r+2$.}
+\frac{\nu_j}{\sqrt{2j+1}}=B_j\biggl[\frac{\rho-r}{\rho+r+2}
+	\biggl(\frac{1}{1+\rho}
+	-\sum_{\substack{k=1\\ k\ne r+1}}^j
+	\frac{2k}{(\rho+1+k)(\rho+1-k)}\biggr)
++\frac{2(r+1)}{(\rho+r+2)^2}\biggr].
+\]
+
+
+If $\rho=r$ then we can use the formula~\eqref{eq: nul} to compute
+$\nu_j$ for $0\le j\le r$.  Next, for $j=r+1$,
+\[
+\frac{\nu_{r+1}}{\sqrt{2r+3}}
+	=-\,\frac{(r!)^2}{(2r+2)!}=\frac{-1}{2(r+1) }
+	\prod_{k=1}^r\frac{k}{2(2k+1)},
+\]
+and after that we have the recursion
+\[
+\frac{\nu_{j+1}}{\sqrt{2j+3}}=-\frac{j-r}{j+r+2}\,
+	\frac{\nu_j}{\sqrt{2j+1}}
+	\quad\text{for $j\ge r+1$,}
+\]
+or equivalently,
+\[
+\nu_{j+1}=-\nu_j\times\frac{j-r}{j+r+2}\,\sqrt{\frac{2j+3}{2j+1}}
+	\quad\text{for $j\ge r+1$.}
 \]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Francis QR-algorithm using Householder reflections}
