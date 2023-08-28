@@ -21,22 +21,56 @@ function modified_moments(n::Integer, ρ::T) where T <: AbstractFloat
     for j = 1:m
 	B *= (ρ + 1 - j) / (ρ + 1 + j)
 	S -= 2j / ( (ρ + 1 - j)*(ρ + 1 + j) )
-	tjm1 = convert(T, 2j-1)
-	ν[j] = B * S * sqrt(tjm1)
+	tjp1 = convert(T, 2j+1)
+	ν[j] = B * S * sqrt(tjp1)
+        println("j = $j, B = $B, S = $S")
     end
     if 2n+1 > r
 	j = r + 1
 	X = 2(r+1) / (ρ + r + 2)^2
-	tjm1 = convert(T, 2j+1)
-	ν[j] = B * ( S * (ρ - r)/(ρ + r + 2) + X ) * sqrt(tjm1)
+	tjp1 = convert(T, 2j+1)
+	ν[j] = B * ( S * (ρ - r)/(ρ + r + 2) - X ) * sqrt(tjp1)
 	for j = r+2:2n+1
 	    B *= (ρ + 1 - j) / (ρ + 1 + j)
 	    S -= 2j / ( (ρ + 1 - j)*(ρ + 1 + j) )
-	    tjm1 = convert(T, 2j-1)
-	    ν[j] = B * ( S * (ρ - r)/(ρ + r + 2) + X ) * sqrt(tjm1)
+	    tjp1 = convert(T, 2j+1)
+	    ν[j] = B * ( S * (ρ - r)/(ρ + r + 2) - X ) * sqrt(tjp1)
 	end
     end
     return ν
+end
+
+function modified_moments(::Type{T}, n::Integer, 
+                          r::Integer) where T <: AbstractFloat
+    m = min(2n, r+1)
+    rr = convert(T, r)
+    S = 1 / (1 + rr)
+    B = S
+    ν = OffsetVector{T}(undef, 0:2n+1)
+    ν[0] = B * S
+    for j = 1:m
+        B *= (rr + 1 - j) / (rr + 1 + j)
+        S -= 2j / ( (rr + 1 - j) * (rr + 1 + j) )
+        tjp1 = convert(T, 2j+1)
+        ν[j] = B * S * sqrt(tjp1)
+    end
+    if 2n+1 > r
+        product = one(T)
+        for k = 1:r
+            product *= convert(T, k) / (2 * (2k+1))
+        end
+        sq = sqrt(2rr + 3)
+        ν[r+1] = - ( product / (2*(r+1)) ) * sq
+        for j = r+2:2n-1
+            tjp1 = convert(T, 2j+1) 
+            new_sq = sqrt(tjp1)
+            ν[j] = -ν[j-1] * (neq_sq/sq) * ( (j - rr - 1)/(j + rr + 1) )
+            sq = new_sq
+        end
+    end
+    return ν
+end
+    
 end
 
 function modified_Chebyshev(a::Vector{T}, b::OffsetVector{T}, 

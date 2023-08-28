@@ -380,6 +380,7 @@ function modified_moments(n::Integer, ρ::T) where {T<:AbstractFloat}
         B *= (ρ+1-j) / (ρ+1+j)
 	S += 1 / (ρ+1+j) - 1 / (ρ+1-j)
         ν[l] = B * S * sqrt(convert(T,2l-1))
+        println("j = $j, B = $B, S = $S")
     end
     if 2n > r+1
         l = r + 2

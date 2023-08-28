@@ -689,7 +689,7 @@ and therefore, since $\|p_k\|/\|p_{k-1}\|=b_k$,
 \[
 \sigma_{k,k}\alpha_k=a_k\sigma_{k,k}+b_k
 	\sigma_{k+1,k}
-	-\beta_{k-1}\sigma_{k,k-1}}.
+	-\beta_{k-1}\sigma_{k,k-1}.
 \]
 The desired formula for~$\alpha_k$  (including the case $k=1$ when
 $\sigma_{1,0}=0$) follows after dividing by~$\sigma_{k,k}$.
@@ -722,22 +722,21 @@ Following \cite{Gautschi1979}, we make the substitution $y=2x-1$
 and obtain
 \[
 \frac{\nu_j}{\sqrt{2j-1}}=\frac{\log 2}{2^{\rho+1}}\int_{-1}^1
-	P_{j-1}(y)(y+1)^\rho\,dy
-	-\frac{1}{2^{\rho+1}}\int_{-1}^1 P_{j-1}(y)(y+1)^\rho\log(y+1)\,dy.
+	P_j(y)(y+1)^\rho\,dy
+	-\frac{1}{2^{\rho+1}}\int_{-1}^1 P_j(y)(y+1)^\rho\log(y+1)\,dy.
 \]
-It is known that
+It is known \cite{Gautschi1979} that
 \[
 \int_{-1}^1 P_j(y)(y+1)^\rho\,dy
 	=\frac{2^{\rho+1}\Gamma(\rho+1)^2}%
 {\Gamma(\rho+2+j)\Gamma(\rho+1-j)},
 \]
-and by logarithmic differentiation of this identity with respect 
-to~$\rho$, we find that
+and by differentiating with respect to~$\rho$, we find that
 \begin{multline*}
 \int_{-1}^1 P_j(y)(y+1)^\rho\log(y+1)\,dy
 	=\frac{2^{\rho+1}\Gamma(\rho+1)^2}%
 {\Gamma(\rho+2+j)\Gamma(\rho+1-j)}\\
-	\times\bigl[\log2+2\psi(\rho+1)-\psi(\rho+1+l)-\psi(\rho+2-l)
+	\times\bigl[\log2+2\psi(\rho+1)-\psi(\rho+2+j)-\psi(\rho+1-j)
 	\bigr],
 \end{multline*}
 where $\psi(x)=\Gamma'(x)/\Gamma(x)$ denotes the digamma function.
@@ -761,10 +760,10 @@ we find that
 \]
 for $m\in\{0,1,2,\dots\}$.  Thus, if $\rho=r\in\{0,1,2,\dots\}$
 then
-\[
-\frac{\nu_j}{\sqrt{2j+1}}=(-1)^{j-r}\,\frac{(r!)^2(j-r-1)!}{(j+1+r)!}
+\begin{equation}\label{eq: moment rho r}
+\frac{\nu_j}{\sqrt{2j+1}}=(-1)^{j-r}(r!)^2\,\frac{(j-r-1)!}{(j+r+1)!}
 	\quad\text{for $j\in\{r+1, r+2, r+3, \dots\}$.}
-\]
+\end{equation}
 Otherwise, we can use the functional identities
 \[
 \Gamma(z+1)=z\Gamma(z)\quad\text{and}\quad
@@ -772,7 +771,7 @@ Otherwise, we can use the functional identities
 \]
 to simplify \eqref{eq: mu l}.  In fact,
 \[
-\Gamma(\rho+1)=\rho(\rho-1)\cdots(\rho+2-l)\Gamma(\rho+2-l)
+\Gamma(\rho+1)=\rho(\rho-1)\cdots(\rho+1-j)\Gamma(\rho+1-j)
 \]
 and
 \[
@@ -804,9 +803,9 @@ so
 \]
 Hence,
 \begin{equation}\label{eq: nul}
-\frac{\nu_j}{\sqrt{2j+1}}=\frac{1}{\rho+1}\biggl(\frac{1}{\rho+1}
-	-\sum_{k=1}^j\frac{2k}{(\rho+1+k)(\rho+1-k)}\biggr)
-	\prod_{l=1}^j\frac{\rho+1-l}{\rho+1+l}.
+\frac{\nu_j}{\sqrt{2j+1}}=\biggl(\frac{1}{\rho+1}
+\prod_{l=1}^j\frac{\rho+1-l}{\rho+1+l}\biggr)
+\biggl(\frac{1}{\rho+1}-\sum_{k=1}^j\frac{2k}{(\rho+1+k)(\rho+1-k)}\biggr).
 \end{equation}
 
 Choose a non-negative integer~$r$ such that $|\rho-r|$ is as small as 
@@ -831,7 +830,7 @@ and for $j\ge r+1$ as
 \frac{\nu_j}{\sqrt{2j+1}}=B_j\,\frac{\rho-r}{\rho+r+2}
 	\biggl(\frac{1}{1+\rho}
 	-\sum_{\substack{k=1\\ k\ne r+1}}^j
-	\frac{2k}{(\rho+1+k)(\rho+1-k)}-\frac{2(r+1)}{(\rho+2+\rho)(\rho-r)}\biggr)
+	\frac{2k}{(\rho+1+k)(\rho+1-k)}-\frac{2(r+1)}{(\rho+2+r)(\rho-r)}\biggr)
 \]
 or equivalently,
 \[
@@ -839,27 +838,28 @@ or equivalently,
 	\biggl(\frac{1}{1+\rho}
 	-\sum_{\substack{k=1\\ k\ne r+1}}^j
 	\frac{2k}{(\rho+1+k)(\rho+1-k)}\biggr)
-+\frac{2(r+1)}{(\rho+r+2)^2}\biggr].
+-\frac{2(r+1)}{(\rho+r+2)^2}\biggr].
 \]
 
 
 If $\rho=r$ then we can use the formula~\eqref{eq: nul} to compute
-$\nu_j$ for $0\le j\le r$.  Next, for $j=r+1$,
+$\nu_j$ for $0\le j\le r$.  Next, for $j=r+1$, 
+the formula~\eqref{eq: moment rho r} gives
 \[
 \frac{\nu_{r+1}}{\sqrt{2r+3}}
 	=-\,\frac{(r!)^2}{(2r+2)!}=\frac{-1}{2(r+1) }
 	\prod_{k=1}^r\frac{k}{2(2k+1)},
 \]
-and after that we have the recursion
+and, after that, the recursion
 \[
-\frac{\nu_{j+1}}{\sqrt{2j+3}}=-\frac{j-r}{j+r+2}\,
-	\frac{\nu_j}{\sqrt{2j+1}}
-	\quad\text{for $j\ge r+1$,}
+\frac{\nu_j}{\sqrt{2j+1}}=-\frac{j-r-1}{j+r+1}\,
+	\frac{\nu_{j-1}}{\sqrt{2j-1}}
+	\quad\text{for $j\ge r+2$,}
 \]
 or equivalently,
 \[
-\nu_{j+1}=-\nu_j\times\frac{j-r}{j+r+2}\,\sqrt{\frac{2j+3}{2j+1}}
-	\quad\text{for $j\ge r+1$.}
+\nu_j=-\nu_{j-1}\times\frac{j-r-1}{j+r+1}\,\sqrt{\frac{2j+1}{2j-1}}
+	\quad\text{for $j\ge r+2$.}
 \]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Francis QR-algorithm using Householder reflections}
@@ -1685,24 +1685,6 @@ with
 \[
 w^{(j)}_{ik}=w^{(j-1)}_{ik}\quad\text{for $1\le k\le j-1$ and $j+2\le k\le n$.}
 \]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
